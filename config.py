@@ -12,3 +12,8 @@ UI_HEIGHT = UI_TOP_HEIGHT + UI_BOT_HEIGHT
 MAP_SIZE = 40
 # Likelihood of a tile containing a room, the lower the number, the higher the chance of generation
 ROOM_LIKELIHOOD = 2
+
+# log file used for debugging information during development
+DEBUG_FILE = "debug.log"
+# log file used for logging by the server
+SERVER_LOG_FILE = "server.log"
