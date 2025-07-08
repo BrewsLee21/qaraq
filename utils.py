@@ -3,7 +3,7 @@ import random
 from tile import Tile, TILE_DIRECTIONS, ENTITIES
 import config as c
 
-def print_to_stderr(s: str):
+def print_to_log_file(s: str):
     with open("log.txt", 'a') as f:
         print(s, file=f)
 
@@ -301,4 +301,10 @@ def get_center(map_grid):
     """Takes the generated map grid and returns the coordinates of the center tile as a tuple of x and y values"""
     return ((len(map_grid[0]) - 1) // 2, (len(map_grid) - 1) // 2)
     
-# ===============================================
+# =============================================
+
+# ============ Debugging functions ============
+
+def print_to_stderr(s: str):
+    with open(c.DEBUG_FILE, 'a') as f:
+        print(s, file=f)
