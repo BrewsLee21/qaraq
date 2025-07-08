@@ -7,10 +7,6 @@ from ui import UI
 from player import Player
 import config as c
 
-def print_to_stderr(s: str):
-    with open("log.txt", 'a') as f:
-        print(s, file=f)
-
 def main(stdscr, map_size):
     map_grid = generate_map_grid(map_size) # Returns a 2D list representing the map grid
     if map_grid == -1:
