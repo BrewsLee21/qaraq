@@ -14,13 +14,26 @@ def main(stdscr, map_size):
 
     p1 = Player("p1", get_center(map_grid))
     ui = UI(stdscr)
+
+    key_directions = {
+        "KEY_LEFT": "left",
+        "KEY_UP": "up",
+        "KEY_RIGHT": "right",
+        "KEY_DOWN": "down"
+    }
+
+    map_grid[p1.player_y][p1.player_x].player_present = True
     
     # Main game loop
     while True:
         player_view = get_player_view(map_grid, p1.player_x, p1.player_y)
         ui.update_player_view(player_view)
-        inp = str(ui.bot_win.getch())
-        print_to_stderr(inp)
-    
+        
+        inp = stdscr.getkey()
+        if inp in key_directions:
+            map_grid[p1.player_y][p1.player_x].player_present = False
+            p1.move_in_direction(map_grid, key_directions[inp])
+            map_grid[p1.player_y][p1.player_x].player_present = True
+                
 if __name__ == "__main__":
     wrapper(partial(main, map_size=c.MAP_SIZE))

@@ -12,6 +12,9 @@ class UI:
         #   bot_win - bottom window
         #   player_view_win - a window containing the grid of visible tiles
         #   player_view_tile_grid - a 2D grid of windows inside player_view_win each representing one tile
+        #
+        #   RED_DEFAULT - the color pair used for screens contaning a tile with the player on them (player_present is True)
+        
 
         self.stdscr = stdscr
 
@@ -59,6 +62,12 @@ class UI:
         self.bot_win.box()
         self.bot_win.refresh()
 
+        # Create the color pair for players
+
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
+        self.RED_DEFAULT = curses.color_pair(1)
+        
+
     def refresh_all(self):
         """Refreshes both top and bottom windows"""
         self.top_win.refresh()
@@ -70,7 +79,10 @@ class UI:
             for col in range(c.PLAYER_VIEW_X):
                 # For each tile in the player_view_tile_grid
                 for i, line in enumerate(player_view[row][col].lines):
-                    self.player_view_tile_grid[row][col].insstr(i, 0, line)
+                    if player_view[row][col].player_present:
+                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.RED_DEFAULT)
+                    else:
+                        self.player_view_tile_grid[row][col].insstr(i, 0, line)
                     self.player_view_tile_grid[row][col].refresh()
                     
     

@@ -4,7 +4,7 @@ from tile import Tile, TILE_DIRECTIONS, ENTITIES
 import config as c
 
 def print_to_log_file(s: str):
-    with open("log.txt", 'a') as f:
+    with open(c.DEBUG_FILE, 'a') as f:
         print(s, file=f)
 
 # ============= Map rendering and generation =============
@@ -133,7 +133,7 @@ def fix_possible_directions(map_grid, tile: Tile):
 def generate_random_entity():
     entities = list(ENTITIES)
     entities.remove("start")
-    entities.remove("none")
+    entities.remove("player")
     chosen_entity =  random.choice(entities)
     return chosen_entity
     
@@ -232,26 +232,6 @@ def generate_map_grid(size: int):
 # ===============================================
 
 # ============= Game loop functions =============
-
-def move_in_direction(map_grid: list, current_tile: Tile, direction: str):
-    """Checks if movement in given direction is possible, returns the new tile if it is and -1 if it isn't"""
-
-    if direction not in current_tile.directions: # given direction is not possible
-        return -1
-
-    offsets = {
-        "left":  (0, -1),
-        "up":    (-1, 0),
-        "right": (0, 1),
-        "down":  (1, 0)
-    }
-    
-    dy, dx = offsets[direction]
-    new_y = current_tile.coordinate_y + dy
-    new_x = current_tile.coordinate_x + dx
-
-    return map_grid[new_y][new_x]
-    
 
 def get_player_view(map_grid: list, player_x, player_y):
     """Takes the map_grid and player's position and returns a 2D grid of tiles with the player in the center"""

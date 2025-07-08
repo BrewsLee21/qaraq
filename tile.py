@@ -1,8 +1,8 @@
 import random
+import config as c
 
 ENTITIES = {
-    "none": ' ', # Used for removing entities from tiles
-    "start": '*', # The starting tile
+    "start": '♥', # The starting tile
     "player": '@',
     "chest": 'C',
     "enemy": 'e'
@@ -46,19 +46,32 @@ class Tile:
     #   lines - list of lines of the tile
     #   is_room - if tile is a room (can contain entities)
     #   entity - the entity the tile contains
+    #   entity_char - the printed character that represents the entity 
+    #   player_present - if true, tile will print the player entity instead of the entity it would normally print
+
+    def clear_tile(self):
+        """Clears the middle line of a tile"""
+        self.lines[2] = self.lines[2][:1] + "   " + self.lines[2][4:]
 
     def refresh_tile(self):
         """Used after modifying the tile. Recalculates the self.tile and self.lines variables to render the tile correctly when printing"""
 
         if self.entity:
-            entity_len = len(self.entity)
+            entity_len = len(self.entity_char)
             
-            if entity_len > 3:
-                raise ValueError("Entity value too long")
+            # Clear the line that may have contained an enitity
+            self.clear_tile()
+
+            if self.entity == "start":
+                self.lines[1] = self.lines[1][:1] + "♥ ♥" + self.lines[1][4:]
+                self.lines[3] = self.lines[3][:1] + "♥ ♥" + self.lines[3][4:]
+                self.tile = ''.join(self.lines)
+                return
+                
             if entity_len < 3:
-                self.lines[2] = self.lines[2][:2] + self.entity + self.lines[2][2 + entity_len:]
+                self.lines[2] = self.lines[2][:2] + self.entity_char + self.lines[2][2 + entity_len:]
             elif entity_len == 3:
-                self.lines[2] = self.lines[2][:1] + self.entity + self.lines[2][1 + entity_len:]
+                self.lines[2] = self.lines[2][:1] + self.entity_char + self.lines[2][4:]
             self.tile = ''.join(self.lines)
                 
                 
@@ -84,6 +97,9 @@ class Tile:
             self.is_room = False
 
         self.entity = None
+        self.entity_char = ''
+
+        self.player_present = False
         
         self.refresh_tile()
 
@@ -106,9 +122,10 @@ y: {self.coordinate_y}"""
         
         # Set item (if there is any)
         if entity:
-            self.entity = ENTITIES[entity]
+            self.entity = entity
+            self.entity_char = ENTITIES[entity]
             if entity == "enemy":
-                self.entity += str(random.randrange(4, 15))
+                self.entity_char += str(random.randrange(4, 15))
 
         self.refresh_tile()
  
