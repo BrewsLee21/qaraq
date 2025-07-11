@@ -13,7 +13,8 @@ class UI:
         #   player_view_win - a window containing the grid of visible tiles
         #   player_view_tile_grid - a 2D grid of windows inside player_view_win each representing one tile
         #
-        #   RED_DEFAULT - the color pair used for screens contaning a tile with the player on them (player_present is True)
+        #   COLOR_PLAYER - the color pair used for tiles that a player is on (player_present is True)
+        #   COLOR_CHEST - the color pair used for tiles that have a chest on them
         
 
         self.stdscr = stdscr
@@ -64,8 +65,10 @@ class UI:
 
         # Create the color pair for players
 
-        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
-        self.RED_DEFAULT = curses.color_pair(1)
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        self.COLOR_PLAYER = curses.color_pair(1)
+        self.COLOR_CHEST = curses.color_pair(2)
         
 
     def refresh_all(self):
@@ -79,10 +82,11 @@ class UI:
             for col in range(c.PLAYER_VIEW_X):
                 # For each tile in the player_view_tile_grid
                 for i, line in enumerate(player_view[row][col].lines):
+                    self.player_view_tile_grid[row][col].insstr(i, 0, line)
+                    if player_view[row][col].contains_chest:
+                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.COLOR_CHEST)
                     if player_view[row][col].player_present:
-                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.RED_DEFAULT)
-                    else:
-                        self.player_view_tile_grid[row][col].insstr(i, 0, line)
+                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.COLOR_PLAYER)
                     self.player_view_tile_grid[row][col].refresh()
                     
     

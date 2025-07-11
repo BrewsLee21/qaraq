@@ -77,7 +77,7 @@ class Tile:
                 
     
     def __init__(self, tile_type, tile_x, tile_y):
-
+        
         self.coordinate_x = tile_x
         self.coordinate_y = tile_y
         
@@ -100,6 +100,7 @@ class Tile:
         self.entity_char = ''
 
         self.player_present = False
+        self.contains_chest = False
         
         self.refresh_tile()
 
@@ -123,6 +124,8 @@ y: {self.coordinate_y}"""
         # Set item (if there is any)
         if entity:
             self.entity = entity
+            if entity == "chest":
+                self.contains_chest = True
             self.entity_char = ENTITIES[entity]
             if entity == "enemy":
                 self.entity_char += str(random.randrange(4, 15))

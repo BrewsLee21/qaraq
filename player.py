@@ -1,7 +1,11 @@
 class Player:
-    def __init__(self, name: str, center_coordinates):
+    def __init__(self, name: str, player_sock, player_addr, center_coordinates):
+        self.player_sock = player_sock
+        self.player_addr = player_addr
+    
         self.name = name
         self.player_x, self.player_y = center_coordinates
+        self.hp = 5
 
     def move_in_direction(self, map_grid: list, direction: str):
         """Checks if movement in given direction is possible, returns the new tile if it is and -1 if it isn't

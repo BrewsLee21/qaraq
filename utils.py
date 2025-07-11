@@ -1,5 +1,7 @@
 import random
 
+import pickle # REMOVE!!
+
 from tile import Tile, TILE_DIRECTIONS, ENTITIES
 import config as c
 
@@ -259,7 +261,8 @@ def get_player_view(map_grid: list, player_x, player_y):
             player_view[i][j] = tile
             offset_x += 1
         offset_y += 1
-    
+
+    print_to_log_file(str(len(pickle.dumps(player_view))) + " bytes")
     return player_view
 
     

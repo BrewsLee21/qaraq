@@ -1,5 +1,5 @@
 # The width and height of the grid that represents the section of the map grid the player can see
-# Both should be an odd number to make sure there is a center tile
+#   Both should be an odd number to make sure there is a center tile
 PLAYER_VIEW_X = 11 # Number of collumns
 PLAYER_VIEW_Y = 5 # Number of rows
 
@@ -17,3 +17,8 @@ ROOM_LIKELIHOOD = 2
 DEBUG_FILE = "debug.log"
 # log file used for logging by the server
 SERVER_LOG_FILE = "server.log"
+
+
+# ==== NETWORKING ====
+
+LENGTH_PREFIX_SIZE = 4 
