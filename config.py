@@ -21,4 +21,6 @@ SERVER_LOG_FILE = "server.log"
 
 # ==== NETWORKING ====
 
+# Must be 1 byte in size (cannot be larger than 255)
 LENGTH_PREFIX_SIZE = 4 
+

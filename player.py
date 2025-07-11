@@ -1,9 +1,18 @@
+player_colors = {
+    1: "blue",
+    2: "cyan",
+    3: "green",
+    4: "magenta"    
+}
+
 class Player:
-    def __init__(self, name: str, player_sock, player_addr, center_coordinates):
+    def __init__(self, number: str, player_sock, player_addr, center_coordinates):
+        self.name = 'p' + str(number)
+        #self.color = player_colors[number]
+
         self.player_sock = player_sock
         self.player_addr = player_addr
     
-        self.name = name
         self.player_x, self.player_y = center_coordinates
         self.hp = 5
 

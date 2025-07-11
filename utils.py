@@ -261,8 +261,6 @@ def get_player_view(map_grid: list, player_x, player_y):
             player_view[i][j] = tile
             offset_x += 1
         offset_y += 1
-
-    print_to_log_file(str(len(pickle.dumps(player_view))) + " bytes")
     return player_view
 
     
@@ -272,7 +270,7 @@ def get_player_view(map_grid: list, player_x, player_y):
 # ============ Utility functions ============
 
 def draw_grid(grid):
-    """Prints a 3x3 tile grid with the player in the center, takes player position as input"""
+    """Prints the tile grid to terminal"""
     for grid_line in grid:
         for line_index in range(5):
             line = ""
