@@ -135,7 +135,6 @@ def fix_possible_directions(map_grid, tile: Tile):
 def generate_random_entity():
     entities = list(ENTITIES)
     entities.remove("start")
-    entities.remove("player")
     chosen_entity =  random.choice(entities)
     return chosen_entity
     
@@ -281,6 +280,48 @@ def draw_grid(grid):
 def get_center(map_grid):
     """Takes the generated map grid and returns the coordinates of the center tile as a tuple of x and y values"""
     return ((len(map_grid[0]) - 1) // 2, (len(map_grid) - 1) // 2)
+
+def validate_ipaddr(ipaddr: str):
+    """Returns True if given ipaddr is a valid IPv4 address, otherwise returns False"""
+    # Check ipaddr length
+    if not ipaddr or len(ipaddr) > 15 or len(ipaddr) < 7:
+        print_to_log_file("bad length")
+        return False
+    # Check for invalid characters
+    for c in ipaddr:
+        print_to_log_file(c)
+        if not c.isdigit() and c != '.':
+            print_to_log_file("bad character")
+            return False
+    # Check for invalid octet sizes
+    octets = ipaddr.split('.')
+    if len(octets) != 4:
+        return False
+        
+    for octet in octets:
+        if len(octet) > 1 and octet.startswith('0'):
+            return False
+        if int(octet) > 255:
+            return False
+        if len(octet) > 3 or not octet:
+            print_to_log_file("Bad octet")
+            return False
+    return True
+
+def validate_port(port: str):
+    """Returns True if given port is valid, otherwise returns False"""
+
+    if not port:
+        return False
+
+    for c in port:
+        if not c.isdigit():
+            return False
+            
+    if int(port) < 1024 or int(port) > 65535:
+        return False
+
+    return True
     
 # =============================================
 

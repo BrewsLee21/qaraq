@@ -3,7 +3,6 @@ import config as c
 
 ENTITIES = {
     "start": '♥', # The starting tile
-    "player": '@',
     "chest": 'C',
     "enemy": 'e'
 }
@@ -47,7 +46,7 @@ class Tile:
     #   is_room - if tile is a room (can contain entities)
     #   entity - the entity the tile contains
     #   entity_char - the printed character that represents the entity 
-    #   player_present - if true, tile will print the player entity instead of the entity it would normally print
+    #   player_present - 0 if no player is present, otherwise equal to the player's number (1 for P1, 2 for P2, etc.)
 
     def clear_tile(self):
         """Clears the middle line of a tile"""

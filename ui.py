@@ -1,6 +1,8 @@
 import curses
+from curses.textpad import Textbox, rectangle
 
 from tile import Tile
+from utils import validate_ipaddr, validate_port
 import config as c
 
 class UI:
@@ -64,11 +66,10 @@ class UI:
         self.bot_win.refresh()
 
         # Create the color pair for players
-
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        self.COLOR_PLAYER = curses.color_pair(1)
-        self.COLOR_CHEST = curses.color_pair(2)
+        curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
         
 
     def refresh_all(self):
@@ -88,16 +89,78 @@ class UI:
                     if player_view[row][col].player_present:
                         self.player_view_tile_grid[row][col].insstr(i, 0, line, self.COLOR_PLAYER)
                     self.player_view_tile_grid[row][col].refresh()
-                    
-    
-    # Currently not used because I'm using wrapper() instead
-    def close(self):
-        """Terminates the ui and quits curses mode"""
-        curses.echo()
-        curses.nocbreak()
-        self.stdscr.keypad(False) 
-        curses.endwin()
+
+    def get_server_info(self):
+        """Used to display the input fields for information used to connect to the server"""
+        curses.curs_set(1)
+        height, width = self.top_win.getmaxyx()
+
+        input_win_height = height - 2
+        input_win_width = width // 2
+
+        top_offset = 1
+        left_offset = (width - input_win_width) // 2
+
+        input_win = self.top_win.subwin(input_win_height, input_win_width, top_offset, left_offset)
+        input_win.addstr(top_offset, 0, c.LOGO)
+        top_offset += c.LOGO_HEIGHT
+
+        input_win.addstr(top_offset, 1, "Server IP address:")
+        top_offset += + 1
+        ipaddr_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
+        top_offset += 3
+
+        input_win.addstr(top_offset, 1, "Server port:")
+        top_offset += 1
+        port_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
         
+        input_win.refresh()
+        ipaddr_win.refresh()
+        port_win.refresh()
+
+        
+        ip_box = Textbox(ipaddr_win)
+        while True:
+            ipaddr_win.move(0, 0)
+            ip_box.edit()
+
+            server_addr = ip_box.gather().strip()
+            if validate_ipaddr(server_addr):
+                break
+            self.bot_win.addstr(1, 2, "Entered IP address is invalid")
+            self.bot_win.refresh()
+
+            # Clear the invalid input
+            ipaddr_win.clear()
+            ipaddr_win.refresh()
+            
+        self.bot_win.clear()
+        self.bot_win.box()
+        
+        port_box = Textbox(port_win)
+        while True:
+            port_win.move(0, 0)
+            port_box.edit()
+
+            server_port = port_box.gather().strip()
+            if validate_port(server_port):
+                break
+            self.bot_win.addstr(1, 2, "Entered port number is invalid")
+            self.bot_win.refresh()
+
+            # Clear the invalid input
+            port_win.clear()
+            port_win.refresh()
+        self.bot_win.clear()
+        self.bot_win.box()
+
+        curses.curs_set(0)
+
+        self.top_win.clear()
+        self.top_win.box()
+        self.top_win.refresh()
+        return server_addr, server_port
+                
     def wait(self):
         """Used for debugging and testing"""
         inp = self.stdscr.getch()

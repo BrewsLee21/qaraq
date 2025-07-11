@@ -19,15 +19,22 @@ def main(map_size):
         print("MAP_SIZE must be larger than 0!")
         return
 
-    max_players = input("Max players: ")
+    print(f"address: {addr}\nport: {PORT}")
+    max_players = int(input("Max players: "))
 
     while len(players) != max_players:
         new_conn, new_addr = server_socket.accept()
+        print("NEW CLIENT!")
 
+        # FIX THIS IN CASE A PLAYER DISCONNECTS BEFORE GAME STARTS
         players.append(Player(len(players), new_conn, new_addr, get_center(map_grid)))
+        
         bytes_send = send_init_msg(new_conn)
 
-    broadcast("/START")
+    print("Players full")
+
+    
+    
         
     
         

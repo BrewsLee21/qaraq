@@ -1,20 +1,14 @@
-player_colors = {
-    1: "blue",
-    2: "cyan",
-    3: "green",
-    4: "magenta"    
-}
-
 class Player:
     def __init__(self, number: str, player_sock, player_addr, center_coordinates):
         self.name = 'p' + str(number)
-        #self.color = player_colors[number]
 
         self.player_sock = player_sock
         self.player_addr = player_addr
     
         self.player_x, self.player_y = center_coordinates
+        
         self.hp = 5
+        self.base_moves = 4
 
     def move_in_direction(self, map_grid: list, direction: str):
         """Checks if movement in given direction is possible, returns the new tile if it is and -1 if it isn't

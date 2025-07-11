@@ -13,34 +13,37 @@ def send_init_msg(sock):
 
     return bytes_sent
 
-def send_msg(msg, sock):
+def send_msg(msg, sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
     """Sends the message specified by msg to the socket connection specified by sock. Returns the number of bytes sent on success or -1 on failure """
+
     # Status messages are strings
     if type(msg) == str:
+        msg_type = c.MSG_TYPE_STR.to_bytes(1, "big")
         msg_encoded = msg.encode()
         try:
-            msg_encoded_size = len(msg_encoded).to_bytes(c.LENGTH_PREFIX_SIZE, "big")
+            msg_encoded_size = len(msg_encoded).to_bytes(length_prefix_length, "big")
         except OverflowError:
             return -1
         except Exception:
             return -1
 
-        data = msg_encoded_size + msg_encoded
+        data = msg_type + msg_encoded_size + msg_encoded
         bytes_sent = sock.send(data)
         
         return bytes_sent
     
     # Used when sending player_view grids to players
     elif type(msg) == list:
+        msg_type = c.MSG_TYPE_GRID.to_bytes(1, "big")
         pickled_msg = pickle.dumps(msg)
         try:
-            pickled_msg_size = len(pickled_msg).to_bytes(c.LENGTH_PREFIX_SIZE, "big")
+            pickled_msg_size = len(pickled_msg).to_bytes(length_prefix_length, "big")
         except OverflowError:
             return -1
         except Exception:
             return -1
 
-        data = pickled_msg_size + pickled_msg
+        data = msg_type + pickled_msg_size + pickled_msg
         bytes_sent = sock.send(data)
 
         return bytes_sent
@@ -48,10 +51,27 @@ def send_msg(msg, sock):
     else:
         return -1
 
+def recv_msg(sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
+    """Receives a message and returns it as either a string or a 2D list, returns -1 on failure"""
+    data_type = int.from_bytes(sock.recv(1), "big")
+    
+    data_len = int.from_bytes(sock.recv(length_prefix_length), "big")
+    data = sock.recv(data_len)
+    
+    if data_type == c.MSG_TYPE_STR:
+        return data.decode()
+    elif data_type == c.MSG_TYPE_GRID:
+        return pickle.loads(data)
+    else:
+        return -1
+
+    
+
 def broadcast(msg, players: list):
     """Sends a message specified by msg to all player sockets in the players list"""
     for player in players:
         bytes_sent = send_msg(msg, player.player_socket)
+
 
 def create_socket(addr, port):
     """Creates a socket, binds it to a given address and port and sets it to listen and then returns the created socket. Returns -1 on error."""

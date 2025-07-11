@@ -24,3 +24,21 @@ SERVER_LOG_FILE = "server.log"
 # Must be 1 byte in size (cannot be larger than 255)
 LENGTH_PREFIX_SIZE = 4 
 
+MSG_TYPE_STR = 0 # Used to indicate that the upcoming message is an encoded string
+MSG_TYPE_GRID = 1 # Used to indicate that the upcoming message is a pickled 2D list
+
+
+# ==== MISC ====
+
+LOGO = """
+       ____                        
+      / __ \                       
+     | |  | | __ _ _ __ __ _  __ _ 
+     | |  | |/ _` | '__/ _` |/ _` |
+     | |__| | (_| | | | (_| | (_| |
+      \___\_\\\__,_|_|  \__,_|\__, |
+                                | |
+                                |_|
+"""
+
+LOGO_HEIGHT = len(LOGO.splitlines())
