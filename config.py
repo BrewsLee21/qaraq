@@ -18,6 +18,12 @@ DEBUG_FILE = "debug.log"
 # log file used for logging by the server
 SERVER_LOG_FILE = "server.log"
 
+KEY_DIRECTIONS = {
+    "KEY_LEFT": "left",
+    "KEY_UP": "up",
+    "KEY_RIGHT": "right",
+    "KEY_DOWN": "down"
+}
 
 # ==== NETWORKING ====
 

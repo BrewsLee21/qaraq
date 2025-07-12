@@ -5,3 +5,5 @@ PLAYER_TURN = {
     3: "/P3",
     4: "/P4"
 }
+
+NEXT = "/NEXT"

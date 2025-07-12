@@ -234,8 +234,8 @@ def generate_map_grid(size: int):
 
 # ============= Game loop functions =============
 
-def get_player_view(map_grid: list, player_x, player_y):
-    """Takes the map_grid and player's position and returns a 2D grid of tiles with the player in the center"""
+def get_player_view(map_grid: list, player_x: int, player_y: int, caller: int):
+    """Takes the map_grid and player's position and returns a 2D grid of tiles with the player in the center. caller is the number of the player whose view this function returns"""
 
     view_radius_x = c.PLAYER_VIEW_X // 2
     view_radius_y = c.PLAYER_VIEW_Y // 2
@@ -257,6 +257,10 @@ def get_player_view(map_grid: list, player_x, player_y):
                 continue
             
             tile = map_grid[tile_y][tile_x]
+            if tile.players_present and caller in tile.players_present:
+                tile.players_present = [caller]
+            else:
+                tile.players_present = tile.players_present[:1]
             player_view[i][j] = tile
             offset_x += 1
         offset_y += 1

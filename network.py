@@ -2,6 +2,7 @@ import socket
 import pickle
 
 import config as c
+from utils import get_player_view
 
 def send_init_msg(sock):
     """Sends a 1 byte message containing the LENGTH_PREFIX_SIZE to the connected client specified by sock"""
@@ -85,4 +86,18 @@ def create_socket(addr, port):
         return -1
 
     return sock
-    
+
+def handle_new_player_connection(map_grid, player, length_prefix_length=c.LENGTH_PREFIX_SIZE):
+    """Sends important information to newly connected player. Returns 0 on success and -1 on failure"""
+    # Append the player to the players present on the center tile
+    map_grid[player.player_y][player.player_x].players_present.append(player.number)
+
+    # Send the length_prefix_length
+    bytes_sent = send_init_msg(player.player_sock)
+    # Send the new player's number
+    bytes_sent = send_msg(str(player.number), player.player_sock, length_prefix_length)
+    # Calculate and send the new player's view
+    player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
+    send_msg(player_view, player.player_sock)
+
+    return 0

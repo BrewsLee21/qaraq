@@ -46,7 +46,7 @@ class Tile:
     #   is_room - if tile is a room (can contain entities)
     #   entity - the entity the tile contains
     #   entity_char - the printed character that represents the entity 
-    #   player_present - 0 if no player is present, otherwise equal to the player's number (1 for P1, 2 for P2, etc.)
+    #   players_present - list of players currently present on tile
 
     def clear_tile(self):
         """Clears the middle line of a tile"""
@@ -98,8 +98,7 @@ class Tile:
         self.entity = None
         self.entity_char = ''
 
-        self.player_present = False
-        self.contains_chest = False
+        self.players_present = []
         
         self.refresh_tile()
 
@@ -123,8 +122,6 @@ y: {self.coordinate_y}"""
         # Set item (if there is any)
         if entity:
             self.entity = entity
-            if entity == "chest":
-                self.contains_chest = True
             self.entity_char = ENTITIES[entity]
             if entity == "enemy":
                 self.entity_char += str(random.randrange(4, 15))

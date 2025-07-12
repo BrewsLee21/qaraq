@@ -8,23 +8,6 @@ from player import Player
 import config as c
 
 def main(stdscr, map_size):
-    map_grid = generate_map_grid(map_size) # Returns a 2D list representing the map grid
-    if map_grid == -1:
-        print("grid size must be larger than 0!")
-    print_to_log_file(f"{map_grid}")
-    
-    p1 = Player("p1", None, None, get_center(map_grid))
-    ui = UI(stdscr)
-
-    key_directions = {
-        "KEY_LEFT": "left",
-        "KEY_UP": "up",
-        "KEY_RIGHT": "right",
-        "KEY_DOWN": "down"
-    }
-
-    map_grid[p1.player_y][p1.player_x].player_present = True
-    
     # Main game loop
     while True:
         player_view = get_player_view(map_grid, p1.player_x, p1.player_y)
