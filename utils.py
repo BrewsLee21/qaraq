@@ -1,7 +1,5 @@
 import random
 
-import pickle # REMOVE!!
-
 from tile import Tile, TILE_DIRECTIONS, ENTITIES
 import config as c
 
@@ -255,8 +253,9 @@ def get_player_view(map_grid: list, player_x: int, player_y: int, caller: int):
                 player_view[i][j] = Tile("empty", tile_x, tile_y)
                 offset_x += 1
                 continue
-            
-            tile = map_grid[tile_y][tile_x]
+
+            # Make a copy of the tile so that it's possible to only modify the copy and send it to the player
+            tile = map_grid[tile_y][tile_x].copy()
             if tile.players_present and caller in tile.players_present:
                 tile.players_present = [caller]
             else:

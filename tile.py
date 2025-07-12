@@ -1,4 +1,6 @@
 import random
+from copy import deepcopy
+
 import config as c
 
 ENTITIES = {
@@ -127,5 +129,6 @@ y: {self.coordinate_y}"""
                 self.entity_char += str(random.randrange(4, 15))
 
         self.refresh_tile()
- 
 
+    def copy(self):
+        return deepcopy(self)

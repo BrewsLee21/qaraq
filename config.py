@@ -37,14 +37,15 @@ MSG_TYPE_GRID = 1 # Used to indicate that the upcoming message is a pickled 2D l
 # ==== MISC ====
 
 LOGO = """
-       ____                        
-      / __ \                       
-     | |  | | __ _ _ __ __ _  __ _ 
-     | |  | |/ _` | '__/ _` |/ _` |
-     | |__| | (_| | | | (_| | (_| |
-      \___\_\\\__,_|_|  \__,_|\__, |
-                                | |
-                                |_|
+  ____                        
+ / __ \                       
+| |  | | __ _ _ __ __ _  __ _ 
+| |  | |/ _` | '__/ _` |/ _` |
+| |__| | (_| | | | (_| | (_| |
+ \___\_\\\__,_|_|  \__,_|\__, |
+                           | |
+                           |_|
 """
 
 LOGO_HEIGHT = len(LOGO.splitlines())
+LOGO_WIDTH = max([len(line) for line in LOGO.splitlines()])

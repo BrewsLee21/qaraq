@@ -1,9 +1,4 @@
-# Sent to all players at the start of a player's turn
-PLAYER_TURN = {
-    1: "/P1",
-    2: "/P2",
-    3: "/P3",
-    4: "/P4"
-}
-
-NEXT = "/NEXT"
+NEXT = "/NEXT" # Sent by server to client when a move they made is invalid so they don't lose a move
+PVUPDATE = "/PVUPDATE" # Sent by server to client to signalize that 
+START = "/START" # Sent by server to client to signalize start of their turn
+STOP = "/STOP" # Sent by server to client to signalize that they have no moves left (indicates end of their turn)

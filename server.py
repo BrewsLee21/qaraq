@@ -3,7 +3,9 @@ import socket
 from utils import *
 from network import *
 from player import Player
+
 import config as c
+import status_codes as sc
 
 PORT = 8080
 addr = socket.gethostbyname(socket.gethostname())
@@ -40,6 +42,8 @@ def main(map_size):
         # Players go one after another
         for player in players: 
             print(f"P{player.number}'s turn")
+            # Tell player that their turn started
+            send_msg(sc.START, player.player_sock)
             # Each player has an amount of moves
             for _ in range(player.base_moves):
                 while True:
@@ -48,11 +52,15 @@ def main(map_size):
                     move_status = player.move_in_direction(map_grid, c.KEY_DIRECTIONS[player_move])
                     if move_status == 0:
                         break
-                    send_msg("/NEXT", player.player_sock)
+                    send_msg(sc.NEXT, player.player_sock)
                 # Calculate the new player view
                 new_player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
                 # Send the player view back to the player
                 send_msg(new_player_view, player.player_sock)
+                # Broadcast the player's moves to other players
+                broadcast_player_view(map_grid, players, player)
+            # Tell player that their turn ended
+            send_msg(sc.STOP, player.player_sock)
 
 if __name__ == "__main__":
     main(c.MAP_SIZE)

@@ -2,6 +2,7 @@ import socket
 import pickle
 
 import config as c
+import status_codes as sc
 from utils import get_player_view
 
 def send_init_msg(sock):
@@ -68,10 +69,15 @@ def recv_msg(sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
 
     
 
-def broadcast(msg, players: list):
-    """Sends a message specified by msg to all player sockets in the players list"""
+def broadcast_player_view(map_grid, players: list, sender):
+    """Called everytime any player makes a move. Recalculates each player's player_view and sends it to them."""
+    print("Broadcasting player_view...")
     for player in players:
-        bytes_sent = send_msg(msg, player.player_socket)
+        player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
+        print(f"Boradcasting to P{player.number}")
+        if player != sender:
+            bytes_send = send_msg(sc.PVUPDATE, player.player_sock)
+            bytes_sent = send_msg(player_view, player.player_sock)
 
 
 def create_socket(addr, port):

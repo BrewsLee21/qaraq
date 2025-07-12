@@ -118,11 +118,18 @@ class UI:
         input_win_height = height - 2
         input_win_width = width // 2
 
-        top_offset = 1
-        left_offset = (width - input_win_width) // 2
+        top_offset = 1 # One line from the top edge
+        left_offset = (width - input_win_width) // 2 # To make sure input_win is in the middle of the screen
 
         input_win = self.top_win.subwin(input_win_height, input_win_width, top_offset, left_offset)
-        input_win.addstr(top_offset, 0, c.LOGO)
+
+        logo_win_height = c.LOGO_HEIGHT
+        logo_win_width = c.LOGO_WIDTH
+
+        left_offset = (input_win_width - logo_win_width) // 2
+        
+        logo_win = input_win.derwin(logo_win_height + 1, logo_win_width + 1, top_offset, left_offset)
+        logo_win.addstr(c.LOGO)
         top_offset += c.LOGO_HEIGHT
 
         input_win.addstr(top_offset, 1, "Server IP address:")
@@ -133,9 +140,9 @@ class UI:
         input_win.addstr(top_offset, 1, "Server port:")
         top_offset += 1
         port_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
-
-        input_win.box()
+        
         input_win.refresh()
+        logo_win.refresh()
         ipaddr_win.refresh()
         port_win.refresh()
 

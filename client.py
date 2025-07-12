@@ -4,8 +4,9 @@ import socket
 
 from utils import print_to_log_file
 from network import *
-
 from ui import UI
+
+import status_codes as sc
 
 def main(stdscr):
     ui = UI(stdscr)
@@ -19,7 +20,7 @@ def main(stdscr):
         try:
             my_sock.connect((server_addr, server_port))
         except Exception as e:
-            ui.bot_win.addstr(1, 2, "Error while connecting to server...")
+            ui.bot_win.addstr(1, 2, str(e))
             ui.bot_win.refresh()
             my_sock.close()
             continue
@@ -40,13 +41,32 @@ def main(stdscr):
 
     # Game loop
     while True:
-        my_move = ui.stdscr.getkey()
-        send_msg(my_move, my_sock, length_prefix_size)
-        my_view = recv_msg(my_sock, length_prefix_size)
-        if type(my_view) == str:
-            if my_view == "/NEXT": # REPLACE WITH ERROR CODE
-                continue
-        ui.update_player_view(my_view)
+        msg = recv_msg(my_sock, length_prefix_size)
+        # If it's my turn
+        if msg == sc.START:
+            my_move = ui.stdscr.getkey()
+            while True: # Do until end of my turn
+                send_msg(my_move, my_sock, length_prefix_size)
+                player_view_update = recv_msg(my_sock, length_prefix_size)
+
+                # If a status message was received
+                if type(player_view_update) == str:
+                    if player_view_update == sc.NEXT:
+                        # UI - ivalid move!
+                        my_move = ui.stdscr.getkey()
+                        continue
+                    elif player_view_update == sc.STOP:
+                        break
+                # If a player_view update was received
+                elif type(player_view_update) == list:
+                    ui.update_player_view(player_view_update)
+                else:
+                    pass # SOMETHING WENT WRONG!
+                my_move = ui.stdscr.getkey()
+        # If it's another player's turn and I'm getting updates of their movements
+        elif msg == sc.PVUPDATE:
+            player_view_update = recv_msg(my_sock, length_prefix_size)
+            ui.update_player_view(player_view_update)
     
     
 
