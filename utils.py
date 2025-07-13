@@ -292,7 +292,6 @@ def validate_ipaddr(ipaddr: str):
         return False
     # Check for invalid characters
     for c in ipaddr:
-        print_to_log_file(c)
         if not c.isdigit() and c != '.':
             print_to_log_file("bad character")
             return False

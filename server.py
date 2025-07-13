@@ -36,31 +36,50 @@ def main(map_size):
 
         # Handle new connection and send important information
         handle_new_player_connection(map_grid, new_player, c.LENGTH_PREFIX_SIZE)
-        
-    # Game loop
+
+    # Game Loop
     while True:
-        # Players go one after another
-        for player in players: 
-            print(f"P{player.number}'s turn")
+        # Each player plays on their turn
+        for player in players:
+            print(f"P{player.number}'s turn'")
+
             # Tell player that their turn started
             send_msg(sc.START, player.player_sock)
-            # Each player has an amount of moves
-            for _ in range(player.base_moves):
+
+            # Process player's amount of moves
+            for i in range(player.base_moves):
+
+                # ==== Process The Received Move ====
+                
                 while True:
-                    # Receive the move from the player
+                    # Receive move from player
                     player_move = recv_msg(player.player_sock)
                     move_status = player.move_in_direction(map_grid, c.KEY_DIRECTIONS[player_move])
+
+                    # If received move is valid
                     if move_status == 0:
                         break
-                    send_msg(sc.NEXT, player.player_sock)
-                # Calculate the new player view
+                    # If move is invalid
+                    else:
+                        send_msg(sc.NEXT, player.player_sock)
+                        continue
+                # Calculate new player_view
                 new_player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
-                # Send the player view back to the player
+
+                # ==== Send The Results ====
+                
+                # Send new player_view to player
                 send_msg(new_player_view, player.player_sock)
-                # Broadcast the player's moves to other players
+                # Broadcast the player's moves to other players to update their player_views
                 broadcast_player_view(map_grid, players, player)
-            # Tell player that their turn ended
-            send_msg(sc.STOP, player.player_sock)
+
+                # Send turn_status to player
+                if i == (player.base_moves - 1): # If this is was player's last move
+                    send_msg(sc.STOP, player.player_sock)
+                    break
+                else:
+                    send_msg(sc.CONTINUE, player.player_sock)
+                    continue
 
 if __name__ == "__main__":
     main(c.MAP_SIZE)

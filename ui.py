@@ -5,8 +5,6 @@ from tile import Tile
 from utils import validate_ipaddr, validate_port
 import config as c
 
-
-
 class UI:
     def __init__(self, stdscr):
 
@@ -85,6 +83,19 @@ class UI:
         self.bot_win.box()
         self.bot_win.refresh()
 
+    def flush_window_input(self, win):
+        """Used to flush all the input that the user may have buffered by pressing keys when not playing their turn"""
+        win.nodelay(True)
+        while win.getch() != -1:
+            pass
+        win.nodelay(False)
+
+    def clear_bot_win(self):
+        """USED TEMORARILY! Used to clear all text from the bottom window and add the box back"""
+        self.bot_win.clear()
+        self.bot_win.box()
+        self.bot_win.refresh()
+            
     def refresh_all(self):
         """Refreshes both top and bottom windows"""
         self.top_win.refresh()
@@ -106,9 +117,6 @@ class UI:
                                 self.player_view_tile_grid[row][col].insstr(i, 0, line, self.player_colors[player_view[row][col].players_present[0]])
                         self.player_view_tile_grid[row][col].insstr(i, 0, line, self.player_colors[player_view[row][col].players_present[0]])
                     self.player_view_tile_grid[row][col].refresh()
-
-    def update_bottom_window(self):
-        pass
 
     def get_server_info(self):
         """Used to display the input fields for information used to connect to the server"""
