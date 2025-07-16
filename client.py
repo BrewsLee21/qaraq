@@ -20,14 +20,12 @@ def main(stdscr):
         try:
             my_sock.connect((server_addr, server_port))
         except Exception as e:
-            ui.bot_win.addstr(1, 2, str(e))
-            ui.bot_win.refresh()
+            ui.print_msg(str(e))
             my_sock.close()
             continue
         break
-    
-    ui.bot_win.addstr(1, 2, "Successfully connected to server!")
-    ui.bot_win.refresh()
+
+    ui.print_msg("Successfully connected to server!")
 
     # Receive length_prefix_size form server
     length_prefix_size = int.from_bytes(my_sock.recv(1), "big")
@@ -43,11 +41,16 @@ def main(stdscr):
     # Game Loop
     while True:
         msg = recv_msg(my_sock, length_prefix_size)
+
+        # If it is not my turn and I'm getting a message saying who's turn it is
+        if msg in sc.PLAYERS.values():
+            p = msg[1:]
+            ui.print_msg(f"{p}'s turn")
+        
         # If it is my turn
-        if msg == sc.START:
+        elif msg == sc.START:
             ui.clear_bot_win()
-            ui.bot_win.addstr(1, 2, "Start of your turn")
-            ui.bot_win.refresh()
+            ui.print_msg("Turn start")
             while True: # Do until server tells me to STOP
                 ui.flush_window_input(ui.stdscr)
                 my_move = ui.stdscr.getkey()
@@ -59,8 +62,7 @@ def main(stdscr):
                     # If my move was invalid
                     if move_result == sc.NEXT:
                         ui.clear_bot_win()
-                        ui.bot_win.addstr(1, 2, "Invalid move")
-                        ui.bot_win.refresh()
+                        ui.print_msg("Invalid move!")
                         continue
                     else:
                         # SOMETHING WENT WRONG
@@ -82,8 +84,7 @@ def main(stdscr):
                     continue
                 elif turn_status == sc.STOP:
                     ui.clear_bot_win()
-                    ui.bot_win.addstr(1, 2, "End of your turn")
-                    ui.bot_win.refresh()
+                    ui.print_msg("End of turn")
                     break
         # If it is not my turn and I'm getting updates based on other players' moves
         elif msg == sc.PVUPDATE:

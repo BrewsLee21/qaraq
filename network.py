@@ -67,17 +67,20 @@ def recv_msg(sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
     else:
         return -1
 
-    
+def broadcast_turn_taker(players: list, sender):
+    """Used to broadcast which player's turn it is"""
+    print("Broadcasting turn_taker...")
+    for player in players:
+        if player != sender:
+            bytes_sent = send_msg(sc.PLAYERS[sender.number], player.player_sock)
 
 def broadcast_player_view(map_grid, players: list, sender):
     """Called everytime any player makes a move. Recalculates each player's player_view and sends it to them."""
     print("Broadcasting player_view...")
     for player in players:
         player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
-        print(f"Boradcasting to P{player.number}")
-        print(f"Player coordinates: {player.player_x} {player.player_y}")
         if player != sender:
-            bytes_send = send_msg(sc.PVUPDATE, player.player_sock)
+            bytes_sent = send_msg(sc.PVUPDATE, player.player_sock)
             bytes_sent = send_msg(player_view, player.player_sock)
 
 

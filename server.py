@@ -43,6 +43,9 @@ def main(map_size):
         for player in players:
             print(f"P{player.number}'s turn'")
 
+            # Tell every player who's turn it is
+            broadcast_turn_taker(players, player)
+
             # Tell player that their turn started
             send_msg(sc.START, player.player_sock)
 

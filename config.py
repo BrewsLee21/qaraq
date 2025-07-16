@@ -1,17 +1,26 @@
+# ==== GAME ====
+
 # The width and height of the grid that represents the section of the map grid the player can see
 #   Both should be an odd number to make sure there is a center tile
-PLAYER_VIEW_X = 3 # Number of collumns
-PLAYER_VIEW_Y = 3 # Number of rows
+PLAYER_VIEW_X = 11 # Number of collumns
+PLAYER_VIEW_Y = 5 # Number of rows
 
 # Height ratio between the top and bottom window of the game UI
 UI_TOP_HEIGHT = 3
 UI_BOT_HEIGHT = 1
 UI_HEIGHT = UI_TOP_HEIGHT + UI_BOT_HEIGHT
 
+# 3 lines, 1 line for text and 2 for borders
+MESSAGE_WIN_HEIGHT = 1 
+
 # Size (both height and width) of the entire map
-MAP_SIZE = 20
+MAP_SIZE = 100
 # Likelihood of a tile containing a room, the lower the number, the higher the chance of generation
 ROOM_LIKELIHOOD = 2
+
+ENEMY_LIKELIHOOD = 6 # Likelihood of the enemy entity appearing on a tile with a room
+CHEST_LIKELIHOOD = 1 # Likelihood of the chest entity appearing
+HEAL_LIKELIHOOD = 1  # Likelihood of the heal entity
 
 # log file used for debugging information during development
 DEBUG_FILE = "debug.log"

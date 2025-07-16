@@ -2,12 +2,7 @@ import random
 from copy import deepcopy
 
 import config as c
-
-ENTITIES = {
-    "start": '♥', # The starting tile
-    "chest": 'C',
-    "enemy": 'e'
-}
+from entities import Enemy, Chest, Heal
 
 # Possible exit/entry directions of every tile
 TILE_DIRECTIONS = {
@@ -43,11 +38,13 @@ class Tile:
     #   coordinate_y
     #   directions - set containing all directions that the tile can be entered or exited from
     #   possible_directions - used during map generation, contains possible directions to generate new tiles
+
     #   tile  - string of the entire tile
     #   lines - list of lines of the tile
+
     #   is_room - if tile is a room (can contain entities)
-    #   entity - the entity the tile contains
-    #   entity_char - the printed character that represents the entity 
+    #   tier - value from 1 to 3, get higher the farther away from the center the tile is
+    #   entity - the entity the tile contains (will be an instance of an entity class specified in entities.py)
     #   players_present - list of players currently present on tile
 
     def clear_tile(self):
@@ -58,21 +55,21 @@ class Tile:
         """Used after modifying the tile. Recalculates the self.tile and self.lines variables to render the tile correctly when printing"""
 
         if self.entity:
-            entity_len = len(self.entity_char)
+            entity_len = len(self.entity.char)
             
             # Clear the line that may have contained an enitity
             self.clear_tile()
 
-            if self.entity == "start":
-                self.lines[1] = self.lines[1][:1] + "♥ ♥" + self.lines[1][4:]
-                self.lines[3] = self.lines[3][:1] + "♥ ♥" + self.lines[3][4:]
+            if type(self.entity) == Heal:
+                self.lines[1] = self.lines[1][:1] + f"{self.entity.char} {self.entity.char}" + self.lines[1][4:]
+                self.lines[3] = self.lines[3][:1] + f"{self.entity.char} {self.entity.char}" + self.lines[3][4:]
                 self.tile = ''.join(self.lines)
                 return
                 
             if entity_len < 3:
-                self.lines[2] = self.lines[2][:2] + self.entity_char + self.lines[2][2 + entity_len:]
+                self.lines[2] = self.lines[2][:2] + self.entity.char + self.lines[2][2 + entity_len:]
             elif entity_len == 3:
-                self.lines[2] = self.lines[2][:1] + self.entity_char + self.lines[2][4:]
+                self.lines[2] = self.lines[2][:1] + self.entity.char + self.lines[2][4:]
             self.tile = ''.join(self.lines)
                 
                 
@@ -97,8 +94,9 @@ class Tile:
         else:
             self.is_room = False
 
+        self.tier = None
+
         self.entity = None
-        self.entity_char = ''
 
         self.players_present = []
         
@@ -113,20 +111,16 @@ Room: {self.is_room}
 Entity: {self.entity}
 \n
 x: {self.coordinate_x}
-y: {self.coordinate_y}"""  
+y: {self.coordinate_y}"""
 
-    def add_entity(self, entity: str, entity_value = None):
-        """Adds a given item into the tile and calls the refresh_tile function at the end"""
+    def add_tier(self, tier):
+        self.tier = tier
 
-        if self.is_room == False and entity != "player":
-            raise ValueError("Cannot assign non-player entity to a non-room tile")
+    def add_entity(self, entity):
+        """Adds a given item into the tile and calls the refresh_tile function at the end""" 
         
-        # Set item (if there is any)
-        if entity:
-            self.entity = entity
-            self.entity_char = ENTITIES[entity]
-            if entity == "enemy":
-                self.entity_char += str(random.randrange(4, 15))
+        self.entity = entity
+        
 
         self.refresh_tile()
 

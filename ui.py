@@ -1,8 +1,10 @@
 import curses
-from curses.textpad import Textbox, rectangle
+import curses.panel
+from curses.textpad import Textbox
 
 from tile import Tile
-from utils import validate_ipaddr, validate_port
+from entities import Enemy, Chest, Heal
+from utils import validate_ipaddr, validate_port, print_to_log_file
 import config as c
 
 class UI:
@@ -33,8 +35,8 @@ class UI:
         curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
         
         self.entity_colors = {
-            "chest": curses.color_pair(5),
-            "enemy": curses.color_pair(6)
+            Chest: curses.color_pair(5),
+            Enemy: curses.color_pair(6)
         }
         
         self.stdscr = stdscr
@@ -46,19 +48,17 @@ class UI:
 
         self.stdscr.refresh()
 
-        # Windows height ratios
-        c.UI_TOP_HEIGHT = 3
-        c.UI_BOT_HEIGHT = 1
-        c.UI_HEIGHT = c.UI_TOP_HEIGHT + c.UI_BOT_HEIGHT
-
         height, width = self.stdscr.getmaxyx()
 
+        self.screen_height = height
+        self.screen_width = width
+
         # Create the top window
-        top_height = (height * c.UI_TOP_HEIGHT) // c.UI_HEIGHT
+        top_height = ((height * c.UI_TOP_HEIGHT) // c.UI_HEIGHT) - c.MESSAGE_WIN_HEIGHT
         self.top_win = curses.newwin(top_height, width, 0, 0)
         self.top_win.box()
         self.top_win.refresh()
-
+        
         # Create a window to display the player view grid
         player_view_win_width = 5 * c.PLAYER_VIEW_X # Because each tile is 5 characters tall and wide
         player_view_win_height = 5 * c.PLAYER_VIEW_Y
@@ -76,12 +76,21 @@ class UI:
                 tile_win = self.player_view_win.derwin(5, 5, top_begin, left_begin)
                 self.player_view_tile_grid[top_begin // 5][left_begin // 5] = tile_win
         self.player_view_win.refresh()
+
+        # Create the message window
+        self.message_win = curses.newwin(c.MESSAGE_WIN_HEIGHT, width, top_height, 0)
+        self.message_win.vline(0, 0, curses.ACS_VLINE, 1) # This line throws an error
+        self.message_win.vline(0, width - 1, curses.ACS_VLINE, 1)
+        self.message_win.refresh()
         
         # Create the bottom window
-        bot_height = height - top_height
-        self.bot_win = curses.newwin(bot_height, width, top_height, 0)
+        bot_height = height - (top_height + c.MESSAGE_WIN_HEIGHT)
+        self.bot_win = curses.newwin(bot_height, width, top_height + c.MESSAGE_WIN_HEIGHT, 0)
         self.bot_win.box()
         self.bot_win.refresh()
+
+        # Create bottom window ui with panels
+        
 
     def flush_window_input(self, win):
         """Used to flush all the input that the user may have buffered by pressing keys when not playing their turn"""
@@ -90,15 +99,21 @@ class UI:
             pass
         win.nodelay(False)
 
+    def print_msg(self, msg):
+        """Used to print messages into the message_win"""
+        # Clear the window first
+        self.message_win.move(0, 0)
+        self.message_win.clrtoeol()
+        self.message_win.vline(0, 0, curses.ACS_VLINE, 1) # This line throws an error
+        self.message_win.vline(0, self.screen_width - 1, curses.ACS_VLINE, 1)
+
+        self.message_win.addstr(0, 2, msg)
+        self.message_win.refresh()
+
     def clear_bot_win(self):
         """USED TEMORARILY! Used to clear all text from the bottom window and add the box back"""
         self.bot_win.clear()
         self.bot_win.box()
-        self.bot_win.refresh()
-            
-    def refresh_all(self):
-        """Refreshes both top and bottom windows"""
-        self.top_win.refresh()
         self.bot_win.refresh()
 
     def update_player_view(self, player_view: list):
@@ -108,10 +123,11 @@ class UI:
                 # For each tile in the player_view_tile_grid
                 for i, line in enumerate(player_view[row][col].lines):
                     self.player_view_tile_grid[row][col].insstr(i, 0, line)
-                    if player_view[row][col].entity and player_view[row][col].entity in self.entity_colors:
-                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.entity_colors[player_view[row][col].entity])
+                    # Color entity tiles
+                    if player_view[row][col].entity and type(player_view[row][col].entity) in self.entity_colors:
+                        self.player_view_tile_grid[row][col].insstr(i, 0, line, self.entity_colors[type(player_view[row][col].entity)])
+                    # Color player tiles
                     if player_view[row][col].players_present:
-                        # FIX THIS FOR WHEN THERE'S MORE PLAYERS ON ONE TILE
                         if len(player_view[row][col].players_present) > 1:
                             if caller in player_view[row][col].players_present:
                                 self.player_view_tile_grid[row][col].insstr(i, 0, line, self.player_colors[player_view[row][col].players_present[0]])
@@ -163,8 +179,7 @@ class UI:
             server_addr = ip_box.gather().strip()
             if validate_ipaddr(server_addr):
                 break
-            self.bot_win.addstr(1, 2, "Entered IP address is invalid")
-            self.bot_win.refresh()
+            self.print_msg("Entered IP address is invalid")
 
             # Clear the invalid input
             ipaddr_win.clear()
@@ -181,8 +196,7 @@ class UI:
             server_port = port_box.gather().strip()
             if validate_port(server_port):
                 break
-            self.bot_win.addstr(1, 2, "Entered port number is invalid")
-            self.bot_win.refresh()
+            self.print_msg("Entered port number is invalid")
 
             # Clear the invalid input
             port_win.clear()

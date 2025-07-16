@@ -1,13 +1,75 @@
 import random
 
-from tile import Tile, TILE_DIRECTIONS, ENTITIES
+from tile import Tile, TILE_DIRECTIONS
 import config as c
+from entities import ENTITIES, ENTITY_LIKELIHOODS, Enemy, Chest, Heal
+
+# ============= Debugging and Utility =============
 
 def print_to_log_file(s: str):
     with open(c.DEBUG_FILE, 'a') as f:
         print(s, file=f)
 
-# ============= Map rendering and generation =============
+# I don't think I'm gonna need this one
+def draw_grid(grid):
+    """Prints the tile grid to terminal"""
+    for grid_line in grid:
+        for line_index in range(5):
+            line = ""
+            for tile in grid_line:
+                line += tile.lines[line_index]
+            print(line)
+
+def get_center(map_grid):
+    """Takes the generated map grid and returns the coordinates of the center tile as a tuple of x and y values"""
+    return ((len(map_grid[0]) - 1) // 2, (len(map_grid) - 1) // 2)
+
+def validate_ipaddr(ipaddr: str):
+    """Returns True if given ipaddr is a valid IPv4 address, otherwise returns False"""
+    # Check ipaddr length
+    if not ipaddr or len(ipaddr) > 15 or len(ipaddr) < 7:
+        print_to_log_file("bad length")
+        return False
+    # Check for invalid characters
+    for c in ipaddr:
+        if not c.isdigit() and c != '.':
+            print_to_log_file("bad character")
+            return False
+    # Check for invalid octet sizes
+    octets = ipaddr.split('.')
+    if len(octets) != 4:
+        return False
+        
+    for octet in octets:
+        if not octet:
+            return False
+        if len(octet) > 1 and octet.startswith('0'):
+            return False
+        if int(octet) > 255:
+            return False
+        if len(octet) > 3 or not octet:
+            print_to_log_file("Bad octet")
+            return False
+    return True
+
+def validate_port(port: str):
+    """Returns True if given port is valid, otherwise returns False"""
+
+    if not port:
+        return False
+
+    for c in port:
+        if not c.isdigit():
+            return False
+            
+    if int(port) < 1024 or int(port) > 65535:
+        return False
+
+    return True
+
+# ========================================================
+
+# ============= Map Rendering and Generation =============
 
 def get_direction_opposite(direction: str):
     """Returns the opposite of a given direction"""
@@ -130,11 +192,34 @@ def fix_possible_directions(map_grid, tile: Tile):
 
     return possible_directions
 
+def get_distance_from_center(map_grid, tile):
+    """Returns the distance of a given tile from the center tile in the map grid as a tuple of x and y values"""
+    center_x, center_y = get_center(map_grid)
+    tile_x = tile.coordinate_x
+    tile_y = tile.coordinate_y
+
+    return (abs(tile_x - center_x), abs(tile_y - center_y))
+
+def get_tier(map_grid, tile):
+    dx, dy = get_distance_from_center(map_grid, tile)
+
+    # Half the map dimensions (because center is middle)
+    half_width = len(map_grid[0]) // 2  # 20
+    half_height = len(map_grid) // 2    # 20
+
+    # Define thirds based on distance from center
+    third_x = half_width // 3     # 20 // 3 = 6
+    third_y = half_height // 3    # 20 // 3 = 6
+
+    if dx <= third_x and dy <= third_y:
+        return 1
+    elif dx <= third_x * 2 and dy <= third_y * 2:
+        return 2
+    else:
+        return 3
+
 def generate_random_entity():
-    entities = list(ENTITIES)
-    entities.remove("start")
-    chosen_entity =  random.choice(entities)
-    return chosen_entity
+    return random.choices(ENTITIES, weights=ENTITY_LIKELIHOODS, k=1)
     
 def backtrack(map_grid: list, steps: list):
     """Backtracks based on coordinates specified in the steps list of tuples
@@ -150,6 +235,9 @@ def backtrack(map_grid: list, steps: list):
 
 def generate_map_grid(size: int):
     """Returns a 2D grid of a given size"""
+
+    print("Generating map...")
+    
     if size <= 0:
         return -1
 
@@ -161,7 +249,7 @@ def generate_map_grid(size: int):
     map_grid[center_y][center_x] = Tile("crossroad_room", center_x, center_y)
 
     current_tile = map_grid[center_y][center_x]
-    current_tile.add_entity("start")
+    current_tile.add_entity(Heal())
 
     # List to store steps during grid generation to use when backtracking
     steps = [(center_x, center_y)]
@@ -215,9 +303,15 @@ def generate_map_grid(size: int):
         map_grid[new_y][new_x] = Tile(new_tile, new_x, new_y)
         map_grid[new_y][new_x].possible_directions.remove(get_direction_opposite(new_direction))
         current_tile = map_grid[new_y][new_x]
-
+        
+        tier = get_tier(map_grid, current_tile)
+        current_tile.add_tier(tier)
         if current_tile.is_room:
-            current_tile.add_entity(generate_random_entity())
+            random_entity = generate_random_entity()
+            if random_entity[0] == Heal:
+                current_tile.add_entity(random_entity[0]())
+            else:
+                current_tile.add_entity(random_entity[0](tier))
                 
 
     # Make any tiles who are still None turn into empty tile types
@@ -226,11 +320,12 @@ def generate_map_grid(size: int):
             if map_grid[i][j] is None:
                 map_grid[i][j] = Tile("empty", i, j)
 
+    print("Done")
     return map_grid
 
 # ===============================================
 
-# ============= Game loop functions =============
+# ============= Game Loop Functions =============
 
 def get_player_view(map_grid: list, player_x: int, player_y: int, caller: int):
     """Takes the map_grid and player's position and returns a 2D grid of tiles with the player in the center. caller is the number of the player whose view this function returns"""
@@ -264,71 +359,5 @@ def get_player_view(map_grid: list, player_x: int, player_y: int, caller: int):
             offset_x += 1
         offset_y += 1
     return player_view
-
-    
-
-# ===========================================
-
-# ============ Utility functions ============
-
-def draw_grid(grid):
-    """Prints the tile grid to terminal"""
-    for grid_line in grid:
-        for line_index in range(5):
-            line = ""
-            for tile in grid_line:
-                line += tile.lines[line_index]
-            print(line)
-
-def get_center(map_grid):
-    """Takes the generated map grid and returns the coordinates of the center tile as a tuple of x and y values"""
-    return ((len(map_grid[0]) - 1) // 2, (len(map_grid) - 1) // 2)
-
-def validate_ipaddr(ipaddr: str):
-    """Returns True if given ipaddr is a valid IPv4 address, otherwise returns False"""
-    # Check ipaddr length
-    if not ipaddr or len(ipaddr) > 15 or len(ipaddr) < 7:
-        print_to_log_file("bad length")
-        return False
-    # Check for invalid characters
-    for c in ipaddr:
-        if not c.isdigit() and c != '.':
-            print_to_log_file("bad character")
-            return False
-    # Check for invalid octet sizes
-    octets = ipaddr.split('.')
-    if len(octets) != 4:
-        return False
-        
-    for octet in octets:
-        if len(octet) > 1 and octet.startswith('0'):
-            return False
-        if int(octet) > 255:
-            return False
-        if len(octet) > 3 or not octet:
-            print_to_log_file("Bad octet")
-            return False
-    return True
-
-def validate_port(port: str):
-    """Returns True if given port is valid, otherwise returns False"""
-
-    if not port:
-        return False
-
-    for c in port:
-        if not c.isdigit():
-            return False
-            
-    if int(port) < 1024 or int(port) > 65535:
-        return False
-
-    return True
-    
+  
 # =============================================
-
-# ============ Debugging functions ============
-
-def print_to_stderr(s: str):
-    with open(c.DEBUG_FILE, 'a') as f:
-        print(s, file=f)
