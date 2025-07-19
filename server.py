@@ -37,11 +37,20 @@ def main(map_size):
         # Handle new connection and send important information
         handle_new_player_connection(map_grid, new_player, c.LENGTH_PREFIX_SIZE)
 
+    player_disconnected = False
+    disconnected_player = None
+    
     # Game Loop
     while True:
+        # Check if a player has disconnected
+        if player_disconnected:
+            players.remove(player)
+            player_disconnected = False
+        
         # Each player plays on their turn
         for player in players:
-            print(f"P{player.number}'s turn'")
+            
+            print(f"P{player.number}'s turn")
 
             # Tell every player who's turn it is
             broadcast_turn_taker(players, player)
@@ -57,15 +66,31 @@ def main(map_size):
                 while True:
                     # Receive move from player
                     player_move = recv_msg(player.player_sock)
+                    if not player_move:
+                        print("Player disconnected")
+                        player_disconnected = True
+                        disconnected_player = player
+                        break
+                    print("player_move received")
                     move_status = player.move_in_direction(map_grid, c.KEY_DIRECTIONS[player_move])
+
+                    # Check if player stepped on entity
+                    if map_grid[player.player_y][player.player_x].entity:
+                        pass # FINISH!!!
 
                     # If received move is valid
                     if move_status == 0:
                         break
                     # If move is invalid
                     else:
+                        print("Received move is invalid")
                         send_msg(sc.NEXT, player.player_sock)
                         continue
+
+                # End player's turn if they disconnected
+                if player_disconnected:
+                    break
+                
                 # Calculate new player_view
                 new_player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
 
@@ -83,6 +108,9 @@ def main(map_size):
                 else:
                     send_msg(sc.CONTINUE, player.player_sock)
                     continue
+
+            if player_disconnected:
+                break
 
 if __name__ == "__main__":
     main(c.MAP_SIZE)

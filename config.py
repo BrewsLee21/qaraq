@@ -16,7 +16,7 @@ MESSAGE_WIN_HEIGHT = 1
 # Size (both height and width) of the entire map
 MAP_SIZE = 100
 # Likelihood of a tile containing a room, the lower the number, the higher the chance of generation
-ROOM_LIKELIHOOD = 2
+ROOM_LIKELIHOOD = 3
 
 ENEMY_LIKELIHOOD = 6 # Likelihood of the enemy entity appearing on a tile with a room
 CHEST_LIKELIHOOD = 1 # Likelihood of the chest entity appearing
@@ -40,10 +40,12 @@ KEY_DIRECTIONS = {
 LENGTH_PREFIX_SIZE = 4 
 
 MSG_TYPE_STR = 0 # Used to indicate that the upcoming message is an encoded string
-MSG_TYPE_GRID = 1 # Used to indicate that the upcoming message is a pickled 2D list
+MSG_TYPE_OBJ = 1 # Used to indicate that the upcoming message is a pickled list or dictionary
 
 
 # ==== MISC ====
+
+LANG_DIR = "lang/"
 
 LOGO = """
   ____                        

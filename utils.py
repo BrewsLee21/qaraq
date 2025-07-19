@@ -1,4 +1,7 @@
 import random
+import json
+from os import listdir
+from os.path import isfile
 
 from tile import Tile, TILE_DIRECTIONS
 import config as c
@@ -10,19 +13,24 @@ def print_to_log_file(s: str):
     with open(c.DEBUG_FILE, 'a') as f:
         print(s, file=f)
 
-# I don't think I'm gonna need this one
-def draw_grid(grid):
-    """Prints the tile grid to terminal"""
-    for grid_line in grid:
-        for line_index in range(5):
-            line = ""
-            for tile in grid_line:
-                line += tile.lines[line_index]
-            print(line)
+def load_language(filename):
+    """Returns messages in a certain language based on given json file"""
+    with open(c.LANG_DIR + filename, 'r', encoding="utf-8") as f:
+        messages = json.load(f)
+    return messages
 
 def get_center(map_grid):
     """Takes the generated map grid and returns the coordinates of the center tile as a tuple of x and y values"""
     return ((len(map_grid[0]) - 1) // 2, (len(map_grid) - 1) // 2)
+
+def get_lang_files():
+    """Returns a list of all files in the LANG_DIR directory"""
+    lang_files = [f for f in listdir(c.LANG_DIR) if isfile(c.LANG_DIR + f)]
+    return lang_files
+
+def validate_lang_file(filename):
+    """Checks if a language JSON file exists. Returns True if it does, False if it does not"""
+    return isfile(c.LANG_DIR + filename) or filename == ''
 
 def validate_ipaddr(ipaddr: str):
     """Returns True if given ipaddr is a valid IPv4 address, otherwise returns False"""

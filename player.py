@@ -6,20 +6,23 @@ class Player:
         self.player_addr = player_addr
     
         self.player_x, self.player_y = center_coordinates
+
+        # Used to move player back to last tile in case they lose a fight
         self.last_player_x = None
         self.last_player_y = None
         
         self.hp = 5
         self.base_moves = 4
 
+        self.weapons = [None, None] # For weapons, increases power by fixed amount
+        self.consumables = [None, None, None] # One use items, e.g. potions, scrolls, etc.
+        self.gear = [None, None] # Keys (to open chests), shoes (to increase moves amount)
+
     def move_in_direction(self, map_grid: list, direction: str):
         """Checks if movement in given direction is possible, returns 0 on success and -1 on failure
            Also updates player coordinates and tile"""
 
         current_tile = map_grid[self.player_y][self.player_x]
-        
-        if direction not in current_tile.directions: # given direction is not possible
-            return -1
     
         offsets = {
             "left":  (0, -1),
@@ -27,6 +30,10 @@ class Player:
             "right": (0, 1),
             "down":  (1, 0)
         }
+
+        # given direction is not possible or invalid
+        if direction not in current_tile.directions or direction not in offsets: 
+            return -1
         
         dy, dx = offsets[direction]
         new_y = current_tile.coordinate_y + dy
@@ -45,3 +52,12 @@ class Player:
         map_grid[self.player_y][self.player_x].players_present.append(self.number)
         
         return 0
+
+    def get_inventory(self):
+        """Returns a dictionary containing the inventory of the player"""
+        inventory = {
+            "weapons": self.weapons,
+            "consumables": self.consumables,
+            "gear": self.gear
+        }
+        return inventory

@@ -1,14 +1,14 @@
 import curses
-import curses.panel
+from curses import panel
 from curses.textpad import Textbox
 
 from tile import Tile
 from entities import Enemy, Chest, Heal
-from utils import validate_ipaddr, validate_port, print_to_log_file
+from utils import validate_ipaddr, validate_port, validate_lang_file, get_lang_files, print_to_log_file
 import config as c
 
 class UI:
-    def __init__(self, stdscr):
+    def __init__(self, stdscr, messages):
 
         # class variables:
         #   stdscr - standard screen
@@ -40,7 +40,8 @@ class UI:
         }
         
         self.stdscr = stdscr
-
+        self.messages = messages
+        
         curses.noecho()
         curses.cbreak()
         curses.curs_set(0)
@@ -56,7 +57,19 @@ class UI:
         # Create the top window
         top_height = ((height * c.UI_TOP_HEIGHT) // c.UI_HEIGHT) - c.MESSAGE_WIN_HEIGHT
         self.top_win = curses.newwin(top_height, width, 0, 0)
-        self.top_win.box()
+
+        # Add borders
+        self.top_win.border(
+            curses.ACS_VLINE,
+            curses.ACS_VLINE,
+            curses.ACS_HLINE,
+            curses.ACS_HLINE,
+            curses.ACS_ULCORNER,
+            curses.ACS_URCORNER,
+            curses.ACS_LTEE,
+            curses.ACS_RTEE
+        )
+        
         self.top_win.refresh()
         
         # Create a window to display the player view grid
@@ -86,14 +99,101 @@ class UI:
         # Create the bottom window
         bot_height = height - (top_height + c.MESSAGE_WIN_HEIGHT)
         self.bot_win = curses.newwin(bot_height, width, top_height + c.MESSAGE_WIN_HEIGHT, 0)
-        self.bot_win.box()
+        # Add borders
+        self.bot_win.border(
+            curses.ACS_VLINE,
+            curses.ACS_VLINE,
+            curses.ACS_HLINE,
+            curses.ACS_HLINE,
+            curses.ACS_LTEE,
+            curses.ACS_RTEE,
+            curses.ACS_LLCORNER,
+            curses.ACS_LRCORNER
+        )
         self.bot_win.refresh()
 
-        # Create bottom window ui with panels
-        
+    def update_language(self, messages):
+        self.messages = messages
+
+    class Menu:
+        def __init__(self, items, bot_win, caller):
+            self.menu_window = bot_win
+            self.menu = panel.new_panel(bot_win)
+            self.menu.hide()
+            panel.update_panels()
+
+            self.position = 0
+            self.items = items
+            self.items.append((caller.messages["menu_options"]["exit"], "Exit"))
+
+            self.caller_UI = caller
+
+        def navigate(self, n):
+            self.position += n
+            if self.position < 0:
+                self.position = len(self.items) - 1
+            elif self.position == len(self.items):
+                self.position = 0
+
+        def update(self):
+            self.menu.top()
+            self.menu.show()
+            self.menu_window.clear()
+
+            menu_win_height, menu_win_width = self.menu_window.getmaxyx()
+            menu_win_middle_height = menu_win_height // 2
+
+            offset = 2
+            
+            for index, item in enumerate(self.items):
+                if index == self.position:
+                    mode = curses.A_REVERSE
+                else:
+                    mode = curses.A_NORMAL
+                    
+                self.menu_window.addstr(menu_win_middle_height, offset, item[0], mode)
+
+                offset += len(item[0]) + 2
+
+            panel.update_panels()
+            curses.doupdate()
+            
+            # Fix the border
+            UI.bot_win_border(self.caller_UI)
+
+        # Call bot_win_border() after calling this function to fix the bot_win borders
+        def display(self):
+            self.menu.top()
+            self.menu.show()
+            self.menu_window.clear()
+
+            self.update()
+
+        def run(self):
+            """Returns 0 if exit was entered, otherwise returns 1"""
+            if self.position == len(self.items) - 1:
+                return 0
+            else:
+                self.caller_UI.current_menu = self.items[self.position][1]
+                self.caller_UI.current_menu.position = 0
+                self.caller_UI.current_menu.display()
+                return 1
+
+    def initialize_panel_menu(self, player_inventory = None):
+        """Initializes the Menu class to create some menus"""
+        self.invetory_menu = self.Menu([("Beep", curses.beep)], self.bot_win, self)
+
+        main_menu_items = [
+            (self.messages["menu_options"]["items"], self.inventory_menu),
+            #(self.messages["menu_options"]["abilities"], self.abilities_menu)
+        ]
+        self.main_menu = UI.Menu(main_menu_items, self.bot_win, self)
+        self.main_menu.display()
+        self.current_menu = self.main_menu
 
     def flush_window_input(self, win):
         """Used to flush all the input that the user may have buffered by pressing keys when not playing their turn"""
+        print_to_log_file("Flushing...")
         win.nodelay(True)
         while win.getch() != -1:
             pass
@@ -110,10 +210,30 @@ class UI:
         self.message_win.addstr(0, 2, msg)
         self.message_win.refresh()
 
-    def clear_bot_win(self):
-        """USED TEMORARILY! Used to clear all text from the bottom window and add the box back"""
-        self.bot_win.clear()
-        self.bot_win.box()
+    def top_win_border(self):
+        """Displays a border for the top window, makes sure it blends in with message_win"""
+        self.top_win.border(
+            curses.ACS_VLINE,
+            curses.ACS_VLINE,
+            curses.ACS_HLINE,
+            curses.ACS_HLINE,
+            curses.ACS_ULCORNER,
+            curses.ACS_URCORNER,
+            curses.ACS_LTEE,
+            curses.ACS_RTEE)
+        self.top_win.refresh()
+
+    def bot_win_border(self):
+        """Displays a border for the bottom window, makes sure it blends in with message_win"""
+        self.bot_win.border(
+            curses.ACS_VLINE,
+            curses.ACS_VLINE,
+            curses.ACS_HLINE,
+            curses.ACS_HLINE,
+            curses.ACS_LTEE,
+            curses.ACS_RTEE,
+            curses.ACS_LLCORNER,
+            curses.ACS_LRCORNER)
         self.bot_win.refresh()
 
     def update_player_view(self, player_view: list):
@@ -133,6 +253,51 @@ class UI:
                                 self.player_view_tile_grid[row][col].insstr(i, 0, line, self.player_colors[player_view[row][col].players_present[0]])
                         self.player_view_tile_grid[row][col].insstr(i, 0, line, self.player_colors[player_view[row][col].players_present[0]])
                     self.player_view_tile_grid[row][col].refresh()
+
+    def get_language(self):
+        curses.curs_set(1)
+        height, width = self.top_win.getmaxyx()
+
+        input_win_height = height - 2
+        input_win_width = width // 2
+
+        top_offset = 1 # One line from the top edge
+        left_offset = (width - input_win_width) // 2 # To make sure input_win is in the middle of the screen
+
+        input_win = self.top_win.subwin(input_win_height, input_win_width, top_offset, left_offset)
+
+        lang_files = get_lang_files()
+        input_win.addstr(top_offset, 1, self.messages["input_win_messages"]["available_languages"])
+        top_offset += 1
+        for lang_f in lang_files:
+            input_win.addstr(top_offset, 1, lang_f)
+            top_offset += 1
+        top_offset += 1
+
+        input_win.addstr(top_offset, 1, self.messages["input_win_messages"]["lang"])
+        top_offset += + 1
+        lang_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
+
+        input_win.refresh()
+        lang_win.refresh()
+
+        lang_box = Textbox(lang_win)
+
+        while True:
+            lang_win.move(0, 0)
+            lang_box.edit()
+
+            lang_file = lang_box.gather().strip()
+            if validate_lang_file(lang_file):
+                break
+            self.print_msg(self.messages["input_win_messages"]["invalid_lang"])
+
+            # Clear the invalid input
+            lang_win.clear()
+            lang_win.refresh()
+
+        input_win.clear()
+        return lang_file
 
     def get_server_info(self):
         """Used to display the input fields for information used to connect to the server"""
@@ -156,12 +321,12 @@ class UI:
         logo_win.addstr(c.LOGO)
         top_offset += c.LOGO_HEIGHT
 
-        input_win.addstr(top_offset, 1, "Server IP address:")
+        input_win.addstr(top_offset, 1, self.messages["input_win_messages"]["server_ip"])
         top_offset += + 1
         ipaddr_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
         top_offset += 3
 
-        input_win.addstr(top_offset, 1, "Server port:")
+        input_win.addstr(top_offset, 1, self.messages["input_win_messages"]["server_port"])
         top_offset += 1
         port_win = input_win.derwin(1, input_win_width - 1, top_offset, 1)
         
@@ -179,15 +344,12 @@ class UI:
             server_addr = ip_box.gather().strip()
             if validate_ipaddr(server_addr):
                 break
-            self.print_msg("Entered IP address is invalid")
+            self.print_msg(self.messages["input_win_messages"]["invalid_ip"])
 
             # Clear the invalid input
             ipaddr_win.clear()
             ipaddr_win.refresh()
-            
-        self.bot_win.clear()
-        self.bot_win.box()
-        
+                
         port_box = Textbox(port_win)
         while True:
             port_win.move(0, 0)
@@ -196,19 +358,16 @@ class UI:
             server_port = port_box.gather().strip()
             if validate_port(server_port):
                 break
-            self.print_msg("Entered port number is invalid")
+            self.print_msg(self.messages["input_win_messages"]["invalid_port"])
 
             # Clear the invalid input
             port_win.clear()
             port_win.refresh()
-        self.bot_win.clear()
-        self.bot_win.box()
 
         curses.curs_set(0)
 
         self.top_win.clear()
-        self.top_win.box()
-        self.top_win.refresh()
+        self.top_win_border()
         return server_addr, server_port
                 
     def wait(self):

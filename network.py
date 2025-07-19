@@ -30,12 +30,15 @@ def send_msg(msg, sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
             return -1
 
         data = msg_type + msg_encoded_size + msg_encoded
-        bytes_sent = sock.send(data)
+        try:
+            bytes_sent = sock.send(data)
+        except:
+            return -1
         
         return bytes_sent
     
     # Used when sending player_view grids to players
-    elif type(msg) == list:
+    elif type(msg) == list or type(msg) == dict:
         msg_type = c.MSG_TYPE_GRID.to_bytes(1, "big")
         pickled_msg = pickle.dumps(msg)
         try:
@@ -62,7 +65,7 @@ def recv_msg(sock, length_prefix_length=c.LENGTH_PREFIX_SIZE):
     
     if data_type == c.MSG_TYPE_STR:
         return data.decode()
-    elif data_type == c.MSG_TYPE_GRID:
+    elif data_type == c.MSG_TYPE_OBJ:
         return pickle.loads(data)
     else:
         return -1

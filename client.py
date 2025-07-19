@@ -2,14 +2,23 @@ import curses
 from curses import wrapper
 import socket
 
-from utils import print_to_log_file
+from utils import load_language
 from network import *
 from ui import UI
 
 import status_codes as sc
 
 def main(stdscr):
-    ui = UI(stdscr)
+    # Default language is English
+    messages = load_language("en.json")
+    ui = UI(stdscr, messages)
+
+    lang_file = ui.get_language()
+    if lang_file == '':
+        lang_file = "en.json"
+    messages = load_language(lang_file)
+    ui.update_language(messages)
+    
     while True:
         server_addr, server_port = ui.get_server_info()
 
@@ -25,7 +34,7 @@ def main(stdscr):
             continue
         break
 
-    ui.print_msg("Successfully connected to server!")
+    ui.print_msg(messages["status_messages"]["connected"])
 
     # Receive length_prefix_size form server
     length_prefix_size = int.from_bytes(my_sock.recv(1), "big")
@@ -37,6 +46,8 @@ def main(stdscr):
     my_view = recv_msg(my_sock, length_prefix_size)
     ui.update_player_view(my_view)
 
+    ui.initialize_panel_menu()
+    ui.main_menu.display()
 
     # Game Loop
     while True:
@@ -45,15 +56,39 @@ def main(stdscr):
         # If it is not my turn and I'm getting a message saying who's turn it is
         if msg in sc.PLAYERS.values():
             p = msg[1:]
-            ui.print_msg(f"{p}'s turn")
+            ui.print_msg(messages["status_messages"]["player_turn"].format(p))
         
         # If it is my turn
         elif msg == sc.START:
-            ui.clear_bot_win()
-            ui.print_msg("Turn start")
+            ui.print_msg(messages["status_messages"]["turn_start"])
             while True: # Do until server tells me to STOP
                 ui.flush_window_input(ui.stdscr)
                 my_move = ui.stdscr.getkey()
+
+                if my_move == '\t':
+                    ui.current_menu.navigate(1)
+                    ui.current_menu.update()
+                    continue
+                    
+                elif my_move == "KEY_BTAB":
+                    ui.current_menu.navigate(-1)
+                    ui.current_menu.update()
+                    continue
+
+                # If enter is pressed
+                elif my_move == '\n':
+                    result = ui.current_menu.run()
+
+                    # If the Exit option was entered
+                    if result == 0:
+                        if ui.current_menu != ui.main_menu:
+                            ui.current_menu = ui.main_menu
+                            ui.current_menu.position = 0
+                            ui.current_menu.update()
+                        else:
+                            pass # Exit the application
+                    continue
+                
                 send_msg(my_move, my_sock, length_prefix_size)
 
                 move_result = recv_msg(my_sock, length_prefix_size)
@@ -61,8 +96,7 @@ def main(stdscr):
                 if type(move_result) == str:
                     # If my move was invalid
                     if move_result == sc.NEXT:
-                        ui.clear_bot_win()
-                        ui.print_msg("Invalid move!")
+                        ui.print_msg(messages["status_messages"]["invalid_move"])
                         continue
                     else:
                         # SOMETHING WENT WRONG
@@ -83,9 +117,9 @@ def main(stdscr):
                 if turn_status == sc.CONTINUE:
                     continue
                 elif turn_status == sc.STOP:
-                    ui.clear_bot_win()
-                    ui.print_msg("End of turn")
+                    ui.print_msg(messages["status_messages"]["turn_end"])
                     break
+                
         # If it is not my turn and I'm getting updates based on other players' moves
         elif msg == sc.PVUPDATE:
             player_view_update = recv_msg(my_sock, length_prefix_size)

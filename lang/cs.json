@@ -1,0 +1,61 @@
+{
+	"status_messages": 
+	{
+		"connected": "Připojení k serveru proběhlo úspěšně!",
+		"player_turn": "Tah hráče {0}",
+		"turn_start": "Začíná tvůj tah",
+		"invalid_move": "Neplatný pohyb!",
+		"turn_end": "Konec tahu"
+	},
+	"input_win_messages":
+	{
+		"available_languages": "Dostupné jazykové soubory:",
+		"lang": "Zadej název jazykového souboru:",
+		"server_ip": "IP adresa serveru:",
+		"server_port": "Port serveru:",
+		"invalid_lang": "Zadaný soubor nebyl nalezen",
+		"invalid_ip": "Zadaná IP adresa je neplatná!",
+		"invalid_port": "Zadaný port je neplatný!"
+	},
+	"menu_options":
+	{
+		"items": "Inventář",
+		"abilities": "Schopnosti",
+		"exit": "Zpět"
+	},
+	"items":
+	{
+		"weapons":
+		{
+			"dagger": "Dýka",
+			"dagger_desc": "Zvyšuje sílu o 1",
+			"sword": "Meč",
+			"sword_desc": "Zvyšuje sílu o 2",
+			"axe": "Sekera",
+			"axe_desc": "Zvyšuje sílu o 3",
+		},
+		"consumables":
+		{
+			"heal_potion_1": "Lektvar zdraví",
+			"heal_potion_1_desc": "Vyléčí hráče o 1 zdraví",
+			"heal_potion_2": "Silnější lektvar zdraví",
+			"heal_potion_2_desc": "Vyléčí hráče o 2 zdraví",
+			"speed_potion": "Lektvar svižnosti",
+			"speed_potion_desc": "Přidá pro toto kolo 1 krok navíc",
+			"power_scroll": "Scroll of power",
+			"power_scroll_desc": "Přidá pro toto kolo 1 sílu navíc"
+		},
+		"gear":
+		{
+			"crocs": "Kroksy",
+			"crocs_desc": "Zvyšují počet kroků o 1",
+			"sneakers": "Tenisky",
+			"sneakers_desc": "Zvyšují počet kroků o 2",
+			"key": "Klíč k truhle",
+			"key_desc": "Lze použít k otevřní truhly"
+		}
+	}
+}
+
+
+

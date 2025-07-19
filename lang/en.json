@@ -1,0 +1,61 @@
+{
+	"status_messages": 
+	{
+		"connected": "Successfully connected to server!",
+		"player_turn": "{0}'s turn",
+		"turn_start": "Turn start",
+		"invalid_move": "Invalid move!",
+		"turn_end": "End of turn"
+	},
+	"input_win_messages":
+	{
+		"available_languages": "Available languge files:",
+		"lang": "Enter language file:",
+		"server_ip": "Server IP address:",
+		"server_port": "Server port:",
+		"invalid_lang": "Entered language file is not available",
+		"invalid_ip": "Entered IP address is invalid!",
+		"invalid_port": "Entered port number is invalid!"
+	},
+	"menu_options":
+	{
+		"items": "Items",
+		"abilities": "Abilities",
+		"exit": "Exit"
+	},
+	"items":
+	{
+		"weapons":
+		{
+			"dagger": "Dagger",
+			"dagger_desc": "Increases power by 1",
+			"sword": "Sword",
+			"sword_desc": "Increases power by 2",
+			"axe": "Axe",
+			"axe_desc": "Increases power by 3"
+		},
+		"consumables":
+		{
+			"heal_potion_1": "Potion of healing",
+			"heal_potion_1_desc": "Heals the player for 1 hp",
+			"heal_potion_2": "Strong potion of healing",
+			"heal_potion_2_desc": "Heals the player for 2 hp",
+			"speed_potion": "Potion of swiftness",
+			"speed_potion_desc": "Adds one move for this turn",
+			"power_scroll": "Scroll of power",
+			"power_scroll_desc": "Adds 1 power for this turn"
+		},
+		"gear":
+		{
+			"crocs": "Crocs",
+			"crocs_desc": "Incerase player moves by 1",
+			"sneakers": "Sneakers",
+			"sneakers_desc": "Increase player moves by 2",
+			"key": "Chest key",
+			"key_desc": "Can be used to open a chest"
+		}
+	}
+}
+
+
+
