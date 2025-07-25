@@ -6,6 +6,7 @@ from os.path import isfile
 from tile import Tile, TILE_DIRECTIONS
 import config as c
 from entities import ENTITIES, ENTITY_LIKELIHOODS, Enemy, Chest, Heal
+from items import generate_item
 
 # ============= Debugging and Utility =============
 
@@ -367,5 +368,27 @@ def get_player_view(map_grid: list, player_x: int, player_y: int, caller: int):
             offset_x += 1
         offset_y += 1
     return player_view
+
+def get_fight_result(player, entity):
+    """Returns a dictionary containing the attack power, fight result and in case of success, the name of a new item"""
+    # Simulate throwing a dice twice and adding up the values
+    base_power = random.randint(1, 6) + random.randint(1, 6)
+
+    extra_power = player.get_extra_power()
+
+    new_item = generate_item(entity.tier)
+
+    if base_power + extra_power > entity.power:
+        return {
+            "power": base_power + extra_power,
+            "success": True,
+            "item": new_item
+        }
+    else:
+        return {
+            "power": base_power + extra_power,
+            "success": False,
+            "item": None
+        }
   
 # =============================================

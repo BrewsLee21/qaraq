@@ -92,8 +92,8 @@ class UI:
 
         # Create the message window
         self.message_win = curses.newwin(c.MESSAGE_WIN_HEIGHT, width, top_height, 0)
-        self.message_win.vline(0, 0, curses.ACS_VLINE, 1) # This line throws an error
-        self.message_win.vline(0, width - 1, curses.ACS_VLINE, 1)
+        self.message_win.vline(0, 0, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT) # This line throws an error
+        self.message_win.vline(0, width - 1, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT)
         self.message_win.refresh()
         
         # Create the bottom window
@@ -114,6 +114,16 @@ class UI:
 
     def update_language(self, messages):
         self.messages = messages
+
+    def clear_msg_win(self):
+        self.print_msg("")
+
+    def display_item_desc(self, item):
+        if not item or type(item) == str:
+            self.clear_msg_win()
+        else:
+            # Print the description of the item
+            self.print_msg(self.messages["items"][item.category][item.name + "_desc"])
 
     class Menu:
         def __init__(self, items, bot_win, caller):
@@ -161,39 +171,166 @@ class UI:
             # Fix the border
             UI.bot_win_border(self.caller_UI)
 
-        # Call bot_win_border() after calling this function to fix the bot_win borders
-        def display(self):
+        def run(self):
+            """Returns -1 if exit was selected, othewise modifies the current_menu variable and returns 1"""
+    
+            # If the Exit button is pressed
+            if self.position == len(self.items) - 1:
+                return -1   
+            else:
+                self.caller_UI.current_menu = self.items[self.position][1]
+                self.caller_UI.current_menu.position = 0
+                return 1
+
+    class InventoryMenu(Menu):
+        def update(self, player_inventory):
+            # player_inventory - dictionary
+            # self.items - a list of Item class instances
+            
+            inventory_items = [item for sublist in player_inventory.values() for item in sublist]
+            
+            self.items = inventory_items
+            self.items.append("exit")
+            
             self.menu.top()
             self.menu.show()
             self.menu_window.clear()
 
-            self.update()
+            left_offset = 2
+            index = 0
+            for key in player_inventory:
+                line = 1
+                self.menu_window.addstr(line, left_offset, self.caller_UI.messages["items"]["categories"][key])
+                line += 1
+                max_item_len = len(self.caller_UI.messages["items"]["categories"][key])
+                for item in player_inventory[key]:
+                    if item:
+                        if len(self.caller_UI.messages["items"][key][item.name]) > max_item_len:
+                            max_item_len = len(self.caller_UI.messages["items"][key][item.name])
+                    if index == self.position:
+                        mode = curses.A_REVERSE
+                    else:
+                        mode = curses.A_NORMAL
+                        
+                    if not item:
+                        item = '_'
+                        self.menu_window.addstr(line, left_offset + 1, item, mode)
+                    else:
+                        self.menu_window.addstr(line, left_offset + 1, self.caller_UI.messages["items"][key][item.name], mode)
+                    index += 1
+                    line += 1
+                left_offset += max_item_len + 2
+            if index == self.position:
+                mode = curses.A_REVERSE
+            else:
+                mode = curses.A_NORMAL
+            self.menu_window.addstr(1, left_offset + 2, self.caller_UI.messages["menu_options"]["exit"], mode)
+                
+            panel.update_panels()
+            curses.doupdate()
+            
+            # Fix the border
+            UI.bot_win_border(self.caller_UI)
 
         def run(self):
-            """Returns 0 if exit was entered, otherwise returns 1"""
+            # If the Exit button is pressed
             if self.position == len(self.items) - 1:
-                return 0
+                return -1
             else:
-                self.caller_UI.current_menu = self.items[self.position][1]
-                self.caller_UI.current_menu.position = 0
-                self.caller_UI.current_menu.display()
                 return 1
 
-    def initialize_panel_menu(self, player_inventory = None):
-        """Initializes the Menu class to create some menus"""
-        self.invetory_menu = self.Menu([("Beep", curses.beep)], self.bot_win, self)
+    class AreYouSureMenu(Menu):
+        def update(self):
+            self.items = [
+                (self.caller_UI.messages["menu_options"]["yes"], True),
+                (self.caller_UI.messages["menu_options"]["no"], False)
+            ]
 
+            self.menu.top()
+            self.menu.show()
+            self.menu_window.clear()
+
+            left_offset = 3
+            
+            for index, item in enumerate(self.items):
+                if index == self.position:
+                    mode = curses.A_REVERSE
+                else:
+                    mode = curses.A_NORMAL
+
+                self.menu_window.addstr(3, left_offset, item[0], mode)
+                left_offset += 5
+
+            panel.update_panels()
+            curses.doupdate()
+            
+            # Fix the border
+            UI.bot_win_border(self.caller_UI)
+
+        def run(self):
+            return self.items[self.position][1]
+
+    class InfoMenu(Menu):
+        def update(self):    
+            self.menu.top()
+            self.menu.show()
+            self.menu_window.clear()
+
+            left_offset = 3
+            
+            self.menu_window.addstr(3, left_offset, "OK", curses.A_REVERSE)
+
+            panel.update_panels()
+            curses.doupdate()
+            
+            # Fix the border
+            UI.bot_win_border(self.caller_UI)
+
+        def run(self):
+            return True
+            
+    def initialize_panel_menu(self):
+        """Initializes the Menu class to create some menus"""
+        self.inventory_menu = self.InventoryMenu([], self.bot_win, self)
+        self.ays_menu = self.AreYouSureMenu([], self.bot_win, self)
+        self.info_menu = self.InfoMenu([], self.bot_win, self)
+        
         main_menu_items = [
             (self.messages["menu_options"]["items"], self.inventory_menu),
-            #(self.messages["menu_options"]["abilities"], self.abilities_menu)
         ]
         self.main_menu = UI.Menu(main_menu_items, self.bot_win, self)
-        self.main_menu.display()
+        self.main_menu.update()
         self.current_menu = self.main_menu
 
+    def are_you_sure(self, msg_action):
+        """Print a 'are you sure?' message. Returns True if the user was sure and False if the user wasn't"""
+        self.print_msg(self.messages["menu_options"]["are_you_sure"] + self.messages["menu_options"]["actions"][msg_action])
+        self.ays_menu.position = 1
+        self.ays_menu.update()
+        while True:
+            my_move = self.stdscr.getkey()
+
+            if my_move == '\t':
+                self.ays_menu.navigate(1)
+            elif my_move == "KEY_BTAB":
+                self.ays_menu.navigate(-1)
+            elif my_move == '\n':
+                return self.ays_menu.run()
+                    
+            self.ays_menu.update()
+
+    def display_info_menu(self, msg):
+        """Display a message into message_win and wait for use to select OK"""
+        self.print_msg(msg)
+        self.info_menu.position = 0
+        self.info_menu.update()
+        while True:
+            my_move = self.stdscr.getkey()
+            if my_move == '\n':
+                return self.info_menu.run()
+        
     def flush_window_input(self, win):
         """Used to flush all the input that the user may have buffered by pressing keys when not playing their turn"""
-        print_to_log_file("Flushing...")
         win.nodelay(True)
         while win.getch() != -1:
             pass
@@ -204,11 +341,13 @@ class UI:
         # Clear the window first
         self.message_win.move(0, 0)
         self.message_win.clrtoeol()
-        self.message_win.vline(0, 0, curses.ACS_VLINE, 1) # This line throws an error
-        self.message_win.vline(0, self.screen_width - 1, curses.ACS_VLINE, 1)
-
+        self.message_win.vline(0, 0, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT) # This line throws an error
+        self.message_win.vline(0, self.screen_width - 1, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT)
+        
         self.message_win.addstr(0, 2, msg)
         self.message_win.refresh()
+
+        self.last_message = msg
 
     def top_win_border(self):
         """Displays a border for the top window, makes sure it blends in with message_win"""

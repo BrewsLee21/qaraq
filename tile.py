@@ -72,7 +72,10 @@ class Tile:
                 self.lines[2] = self.lines[2][:1] + self.entity.char + self.lines[2][4:]
             self.tile = ''.join(self.lines)
                 
-                
+    def remove_entity(self):
+        self.entity = None
+        self.clear_tile()
+        self.refresh_tile()
     
     def __init__(self, tile_type, tile_x, tile_y):
         

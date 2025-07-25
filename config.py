@@ -11,7 +11,7 @@ UI_BOT_HEIGHT = 1
 UI_HEIGHT = UI_TOP_HEIGHT + UI_BOT_HEIGHT
 
 # 3 lines, 1 line for text and 2 for borders
-MESSAGE_WIN_HEIGHT = 1 
+MESSAGE_WIN_HEIGHT = 1
 
 # Size (both height and width) of the entire map
 MAP_SIZE = 100
@@ -40,8 +40,8 @@ KEY_DIRECTIONS = {
 LENGTH_PREFIX_SIZE = 4 
 
 MSG_TYPE_STR = 0 # Used to indicate that the upcoming message is an encoded string
-MSG_TYPE_OBJ = 1 # Used to indicate that the upcoming message is a pickled list or dictionary
-
+MSG_TYPE_OBJ = 1 # Used to indicate that the upcoming message is a pickled list, dictionary or tuple
+MSG_TYPE_BIT = 2 # Used to indicate that the upcoming message is a True/False value
 
 # ==== MISC ====
 

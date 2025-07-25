@@ -2,7 +2,7 @@ import curses
 from curses import wrapper
 import socket
 
-from utils import load_language
+from utils import load_language, print_to_log_file
 from network import *
 from ui import UI
 
@@ -47,7 +47,7 @@ def main(stdscr):
     ui.update_player_view(my_view)
 
     ui.initialize_panel_menu()
-    ui.main_menu.display()
+    ui.main_menu.update()
 
     # Game Loop
     while True:
@@ -65,29 +65,64 @@ def main(stdscr):
                 ui.flush_window_input(ui.stdscr)
                 my_move = ui.stdscr.getkey()
 
+                # ==== Menu Navigation ====
+
+                # If Tab was pressed
                 if my_move == '\t':
                     ui.current_menu.navigate(1)
-                    ui.current_menu.update()
-                    continue
-                    
-                elif my_move == "KEY_BTAB":
-                    ui.current_menu.navigate(-1)
-                    ui.current_menu.update()
+                    # If inventory_menu was selected, request inventory contents
+                    if ui.current_menu == ui.inventory_menu:
+                        # Request my inventory from server
+                        my_inventory = get_inventory(my_sock, length_prefix_size)
+                        ui.current_menu.update(my_inventory)
+                        item = ui.current_menu.items[ui.current_menu.position]
+                        ui.display_item_desc(item)
+                    else:
+                        ui.current_menu.update()
                     continue
 
-                # If enter is pressed
+                # If Shift+Tab was pressed
+                elif my_move == "KEY_BTAB":
+                    ui.current_menu.navigate(-1)
+                    if ui.current_menu == ui.inventory_menu:
+                        # Request my inventory from server
+                        my_inventory = get_inventory(my_sock, length_prefix_size)
+                        ui.current_menu.update(my_inventory)
+                        item = ui.current_menu.items[ui.current_menu.position]
+                        ui.display_item_desc(item)
+                    else:
+                        ui.current_menu.update()
+                    continue
+
+                # If Enter was pressed
                 elif my_move == '\n':
                     result = ui.current_menu.run()
 
+                    # If the inventory_menu was opened
+                    if ui.current_menu == ui.inventory_menu:
+                        # Request my inventory from server
+                        my_inventory = get_inventory(my_sock, length_prefix_size)
+                        # Display the inventory
+                        ui.current_menu.update(my_inventory)
+                        item = ui.current_menu.items[ui.current_menu.position]
+                        ui.display_item_desc(item)
+                    
                     # If the Exit option was entered
-                    if result == 0:
+                    if result == -1:
                         if ui.current_menu != ui.main_menu:
                             ui.current_menu = ui.main_menu
                             ui.current_menu.position = 0
                             ui.current_menu.update()
                         else:
-                            pass # Exit the application
+                            if ui.are_you_sure("exit"):
+                                my_sock.close()
+                                return
+                            else:
+                                ui.current_menu.position = 0
+                                ui.current_menu.update()
                     continue
+
+                # =======================
                 
                 send_msg(my_move, my_sock, length_prefix_size)
 
@@ -98,6 +133,44 @@ def main(stdscr):
                     if move_result == sc.NEXT:
                         ui.print_msg(messages["status_messages"]["invalid_move"])
                         continue
+                    elif move_result == sc.AYSREQUEST:
+                        new_player_view = recv_msg(my_sock, length_prefix_size)
+                        ui.update_player_view(new_player_view)
+
+                        response = ui.are_you_sure("attack")
+
+                        send_msg(response, my_sock, length_prefix_size)
+                        print_to_log_file(f"Sent my response: {response}")
+                        if response == True:
+                            fight_result = recv_msg(my_sock, length_prefix_size)
+                            
+                            fight_power = fight_result["power"]
+                            fight_power_msg = messages["status_messages"]["fight_power"] + str(fight_power)
+                            
+                            fight_status = messages["status_messages"]["success"] if fight_result["success"] else messages["status_messages"]["fail"]
+                            
+                            new_item = fight_result["item"]
+                            if new_item:
+                                new_item_name = messages["items"][new_item.category][new_item.name]
+                                new_item_msg = messages["status_messages"]["new_item"] + new_item_name
+                                fight_msg = f"{fight_power_msg} | {fight_status} | {new_item_msg}"
+                            else:
+                                fight_msg = f"{fight_power_msg} | {fight_status}"
+                            new_player_view = recv_msg(my_sock, length_prefix_size);
+                            ui.update_player_view(new_player_view)
+                            ui.display_info_menu(fight_msg)
+
+                            ui.main_menu.update()
+                            break
+                        # If I changed my mind
+                        else:
+                            new_player_view = recv_msg(my_sock, length_prefix_size);
+                            ui.update_player_view(new_player_view)
+
+                            ui.clear_msg_win
+
+                            ui.main_menu.update()
+                            continue
                     else:
                         # SOMETHING WENT WRONG
                         print_to_log_file("move_result received unexpected str value")
@@ -111,7 +184,7 @@ def main(stdscr):
                     # SOMETHING WENT WRONG
                     print_to_log_file("move_result is of unexpected type")
                     continue
-                    
+
                 # If my move was valid
                 turn_status = recv_msg(my_sock, length_prefix_size)
                 if turn_status == sc.CONTINUE:
@@ -127,3 +200,4 @@ def main(stdscr):
 
 if __name__ == "__main__":
     wrapper(main)
+    print("Bye")

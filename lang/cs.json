@@ -1,19 +1,23 @@
 {
 	"status_messages": 
 	{
-		"connected": "Připojení k serveru proběhlo úspěšně!",
+		"connected": "Připojení k serveru bylo úspešné!",
 		"player_turn": "Tah hráče {0}",
-		"turn_start": "Začíná tvůj tah",
-		"invalid_move": "Neplatný pohyb!",
-		"turn_end": "Konec tahu"
+		"turn_start": "Jsi na tahu",
+		"invalid_move": "Neplatný krok!",
+		"turn_end": "Konec tahu",
+		"fight_power": "Síla: ",
+		"new_item": "Nový předmět: ",
+		"success": "Úspěch!",
+		"fail": "Smůla..."
 	},
 	"input_win_messages":
 	{
-		"available_languages": "Dostupné jazykové soubory:",
-		"lang": "Zadej název jazykového souboru:",
-		"server_ip": "IP adresa serveru:",
-		"server_port": "Port serveru:",
-		"invalid_lang": "Zadaný soubor nebyl nalezen",
+		"available_languages": "Dostupné jazyky:",
+		"lang": "Zadej jazyk:",
+		"server_ip": "IP adresa serveru",
+		"server_port": "Port serveru",
+		"invalid_lang": "Zadaný jazyk není dostupný",
 		"invalid_ip": "Zadaná IP adresa je neplatná!",
 		"invalid_port": "Zadaný port je neplatný!"
 	},
@@ -21,10 +25,24 @@
 	{
 		"items": "Inventář",
 		"abilities": "Schopnosti",
-		"exit": "Zpět"
+		"exit": "Odejít",
+		"are_you_sure": "Jsi si jistý, že chceš ",
+		"yes": "Ano",
+		"no": "Ne",
+		"actions":
+		{
+			"exit": "odejít ze hry?",
+			"attack": "zaútočit?"
+		}
 	},
 	"items":
 	{
+		"categories":
+		{
+			"weapons": "Zbraně",
+			"consumables": "Na jedno použití",
+			"gear": "Výbava"
+		},
 		"weapons":
 		{
 			"dagger": "Dýka",
@@ -32,27 +50,27 @@
 			"sword": "Meč",
 			"sword_desc": "Zvyšuje sílu o 2",
 			"axe": "Sekera",
-			"axe_desc": "Zvyšuje sílu o 3",
+			"axe_desc": "Zbyšuje sílu o 3"
 		},
 		"consumables":
 		{
 			"heal_potion_1": "Lektvar zdraví",
-			"heal_potion_1_desc": "Vyléčí hráče o 1 zdraví",
+			"heal_potion_1_desc": "Vyléčí 1 zdravá",
 			"heal_potion_2": "Silnější lektvar zdraví",
-			"heal_potion_2_desc": "Vyléčí hráče o 2 zdraví",
+			"heal_potion_2_desc": "Vyléčí 2 zdraví",
 			"speed_potion": "Lektvar svižnosti",
-			"speed_potion_desc": "Přidá pro toto kolo 1 krok navíc",
-			"power_scroll": "Scroll of power",
-			"power_scroll_desc": "Přidá pro toto kolo 1 sílu navíc"
+			"speed_potion_desc": "Přidá pro tento tah 1 krok navíc",
+			"power_scroll": "Svitek moci",
+			"power_scroll_desc": "Přidá pro tento tah 1 sílu navíc"
 		},
 		"gear":
 		{
 			"crocs": "Kroksy",
-			"crocs_desc": "Zvyšují počet kroků o 1",
+			"crocs_desc": "Zvyšují množství kroků o 1",
 			"sneakers": "Tenisky",
-			"sneakers_desc": "Zvyšují počet kroků o 2",
-			"key": "Klíč k truhle",
-			"key_desc": "Lze použít k otevřní truhly"
+			"sneakers_desc": "Zvyšují množství kroků o 2",
+			"key": "Klíč",
+			"key_desc": "Lze použít k otevření truhly"
 		}
 	}
 }

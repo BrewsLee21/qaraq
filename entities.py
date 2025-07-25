@@ -11,6 +11,7 @@ class Enemy:
     likelihood = c.ENEMY_LIKELIHOOD
     
     def __init__(self, tier):
+        self.entity_type = "enemy"
         self.tier = tier
         self.power = random.randrange(TIER[tier][0], TIER[tier][1])
         self.char = 'e' + str(self.power)
@@ -19,6 +20,7 @@ class Chest:
     likelihood = c.CHEST_LIKELIHOOD
     
     def __init__(self, tier):
+        self.entity_type = "chest"
         self.tier = tier
         self.char = 'C'
 
@@ -26,6 +28,7 @@ class Heal:
     likelihood = c.HEAL_LIKELIHOOD
     
     def __init__(self):
+        self.entity_type = "heal"
         self.char = '♥'
 
 ENTITIES = [

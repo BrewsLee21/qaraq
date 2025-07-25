@@ -5,7 +5,11 @@
 		"player_turn": "{0}'s turn",
 		"turn_start": "Turn start",
 		"invalid_move": "Invalid move!",
-		"turn_end": "End of turn"
+		"turn_end": "End of turn",
+		"fight_power": "Power: ",
+		"new_item": "New item: ",
+		"success": "Success!",
+		"fail": "Failure..."
 	},
 	"input_win_messages":
 	{
@@ -21,10 +25,24 @@
 	{
 		"items": "Items",
 		"abilities": "Abilities",
-		"exit": "Exit"
+		"exit": "Exit",
+		"are_you_sure": "Are you sure you want to ",
+		"yes": "Yes",
+		"no": "No",
+		"actions":
+		{
+			"exit": "Exit the game?",
+			"attack": "Attack this enemy?"
+		}
 	},
 	"items":
 	{
+		"categories":
+		{
+			"weapons": "Weapons",
+			"consumables": "Consumables",
+			"gear": "Gear"
+		},
 		"weapons":
 		{
 			"dagger": "Dagger",
