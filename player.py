@@ -13,14 +13,24 @@ class Player:
         # Used to move player back to last tile in case they lose a fight
         self.last_direction = None
         
-        self.hp = 5
+        self.health = 5
         self.base_moves = 4
+
+        self.extra_power = 0
+        self.extra_moves = 0
+
+        self.is_dead = False
+        self.disconnected = False
 
         self.inventory = {
             "weapons": [None, None], # For weapons, increases power by fixed amount
             "consumables": [None, None, None], # One use items, e.g. potions, scrolls, etc.
             "gear": [None, None] # Keys (to open chests), shoes (to increase moves amount)
         }
+
+    def remove_extras(self):
+        self.extra_power = 0
+        self.extra_moves = 0
         
     def move_in_direction(self, map_grid: list, direction: str):
         """Checks if movement in given direction is possible, returns 0 on success and -1 on failure
@@ -66,6 +76,15 @@ class Player:
         """Returns a dictionary containing the inventory of the player"""
         return self.inventory
 
+    def get_item(self, index):
+        """Returns the item from the player's inventory based on it's index"""
+        items = [item for sublist in self.inventory.values() for item in sublist]
+
+        if index > len(items):
+            return -1
+        
+        return items[index]
+
     def modify_inventory(self, new_item):
         """Adds an item specified by new_item to the player's inventory. Reutrns 1 on success and -1 when inventory is full"""
         for index, item in enumerate(self.inventory[new_item.category]):
@@ -73,6 +92,17 @@ class Player:
                 self.inventory[new_item.category][index] = new_item
                 return 1
         return -1
+
+    def remove_item(self, item_index):
+        """Removes the item specified by it's index item_index from the player's inventory"""
+        for key in self.inventory:
+            if item_index >= len(self.inventory[key]):
+                item_index -= len(self.inventory[key])
+                continue
+            k = key
+            break
+        self.inventory[k][item_index] = None
+                        
 
     def get_extra_power(self):
         """Returns an integer representing the extra power from items"""
@@ -82,10 +112,43 @@ class Player:
                 extra_power += weapon.power
         return extra_power
 
-    def get_moves(self):
-        """Returns the number of moves the player has at the beginning of each turn"""
-        moves = self.base_moves
+    def get_extra_moves(self):
+        extra_moves = self.extra_moves
         for item in self.inventory["gear"]:
             if item and item.gear_type == "moves":
-                moves += item.moves
-        return moves
+                extra_moves += item.moves
+        return extra_moves
+                
+    def get_moves(self):
+        """Returns the number of moves the player has at the beginning of each turn"""
+        return self.base_moves + self.get_extra_moves()
+
+    def use_item(self, item_index):
+        """Uses a consumable item"""
+        item = self.get_item(item_index)
+        if item.category != "consumables":
+            return -1
+
+        if item.consumable_type == "heal":
+            self.health += item.heal
+            if self.health > 5:
+                self.health = 5
+        elif item.consumable_type == "speed":
+            self.extra_moves += item.speed
+        elif item.consumable_type == "power":
+            self.extra_power += item.power
+        else:
+            return -1
+
+        self.remove_item(item_index)
+        return 1
+
+    def get_stats(self):
+        stats = {}
+
+        stats.update({"extra_power": self.get_extra_power()})
+        stats.update({"base_moves": self.base_moves})
+        stats.update({"extra_moves": self.get_extra_moves()})
+        stats.update({"health": self.health})
+
+        return stats

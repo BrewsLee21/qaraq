@@ -14,6 +14,7 @@ addr = socket.gethostbyname(socket.gethostname())
 players = []
 
 def main(map_size):
+    global players
     server_socket = create_socket(addr, PORT)
 
     map_grid = generate_map_grid(map_size)
@@ -22,7 +23,11 @@ def main(map_size):
         return
 
     print(f"address: {addr}\nport: {PORT}")
-    max_players = int(input("Max players: "))
+    while True:
+        max_players = int(input("Max players: "))
+        if max_players < 1:
+            print("Max players must be larger than 1!")
+        break
 
     center_x, center_y = get_center(map_grid)
 
@@ -46,9 +51,22 @@ def main(map_size):
         if player_disconnected:
             players.remove(player)
             player_disconnected = False
+
+        # Remove dead and disconnected players
+        players = [player for player in players if not player.is_dead and not player.disconnected]
+
+        if len(players) == 1 and max_players > 1:
+            print(f"P{players[0].number} wins!")
+            bytes_sent = send_msg(sc.WIN, players[0].player_sock)
+            break
+
+        if not players:
+            print("No players left...")
+            break
         
         # Each player plays on their turn
         for player in players:
+            player.remove_extras()
             
             print(f"P{player.number}'s turn")
 
@@ -58,27 +76,61 @@ def main(map_size):
             # Tell player that their turn started
             send_msg(sc.START, player.player_sock)
 
+            player_stats = player.get_stats()
+            send_msg(player_stats, player.player_sock)
+
             # Process player's amount of moves
-            player_moves = player.get_moves()
-            i = 0
-            while i < player_moves:
-                print(f"move {i + 1}")
+            moves_left = player.get_moves()
+            while moves_left > 0:
+                print(f"moves left: {moves_left}")
 
                 # ==== Process The Received Move ====
                 
                 while True:
                     # Receive move from player
                     player_move = recv_msg(player.player_sock)
+                    
                     if not player_move:
                         print("Player disconnected")
-                        player_disconnected = True
-                        disconnected_player = player
+                        player.disconnected = True
                         break
 
                     # If player requested their inventory
                     if player_move == sc.INVREQUEST:
                         print("player requested inventory")
                         send_msg(player.get_inventory(), player.player_sock)
+                        continue
+
+                    # If player selected an item in their inventory
+                    elif player_move == sc.ITEMREQUEST:
+                        item_index = int(recv_msg(player.player_sock))
+
+                        item = player.get_item(item_index)
+                        # If player wants to remove item
+                        if item.category != "consumables":
+                            send_msg(sc.AYSREQUEST, player.player_sock)
+                            send_msg("remove", player.player_sock)
+                            player_response = recv_msg(player.player_sock)
+                            if player_response == True:
+                                player.remove_item(item_index)
+                                new_stats = player.get_stats()
+                                
+                                # Send new stats to player
+                                send_msg(new_stats, player.player_sock)
+                                
+                        # If player wants to use item (item is consumable)
+                        else:
+                            send_msg(sc.AYSREQUEST, player.player_sock)
+                            send_msg("use", player.player_sock)
+                            player_response = recv_msg(player.player_sock)
+                            if player_response == True:
+                                player.use_item(item_index)
+                                moves_left += player.extra_moves
+                                new_stats = player.get_stats()
+
+                                # Send new stats to player
+                                send_msg(new_stats, player.player_sock)
+                        
                         continue
                     
                     move_status = player.move_in_direction(map_grid, c.KEY_DIRECTIONS[player_move])
@@ -93,7 +145,7 @@ def main(map_size):
                         continue
 
                 # End player's turn if they disconnected
-                if player_disconnected:
+                if player.disconnected:
                     break
                 
                 # Calculate new player_view
@@ -127,10 +179,28 @@ def main(map_size):
                                 player.modify_inventory(fight_result["item"])
                             # If fight was not successful
                             else:
-                                player.move_back(map_grid)
-                                new_player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
-                                send_msg(new_player_view, player.player_sock)
+                                player.health -= 1
+
+                                if player.health == 0:
+                                    player.is_dead = True
+                                    
+                                    # Remove the dead player from the tile
+                                    map_grid[player.player_y][player.player_x].players_present.remove(player.number)   
+
+                                    # Send sc.DEAD message
+                                    send_msg(sc.DEAD, player.player_sock)
+                                else:
+                                    player.move_back(map_grid)
+                                    new_player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
+
+                                    # Send new_player_view to player
+                                    send_msg(new_player_view, player.player_sock)
+
                                 broadcast_player_view(map_grid, players, player)
+
+                            new_stats = player.get_stats()
+                            send_msg(new_stats, player.player_sock)
+                            
                             break # End player's turn
                         # If player changed their mind
                         else:
@@ -156,16 +226,13 @@ def main(map_size):
                 broadcast_player_view(map_grid, players, player)
 
                 # Send turn_status to player
-                if i == (player_moves - 1): # If this is was player's last move
+                if moves_left == 1: # If this is was player's last move
                     send_msg(sc.STOP, player.player_sock)
                     break
                 else:
                     send_msg(sc.CONTINUE, player.player_sock)
-                    i += 1
+                    moves_left -= 1
                     continue
-
-            if player_disconnected:
-                break
 
 if __name__ == "__main__":
     main(c.MAP_SIZE)

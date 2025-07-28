@@ -45,7 +45,7 @@ class Tile:
     #   is_room - if tile is a room (can contain entities)
     #   tier - value from 1 to 3, get higher the farther away from the center the tile is
     #   entity - the entity the tile contains (will be an instance of an entity class specified in entities.py)
-    #   players_present - list of players currently present on tile
+    #   players_present - list of players currently present on tile represented by their player numbers
 
     def clear_tile(self):
         """Clears the middle line of a tile"""

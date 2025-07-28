@@ -41,6 +41,7 @@ class UI:
         
         self.stdscr = stdscr
         self.messages = messages
+        self.lang = ""
         
         curses.noecho()
         curses.cbreak()
@@ -125,6 +126,39 @@ class UI:
             # Print the description of the item
             self.print_msg(self.messages["items"][item.category][item.name + "_desc"])
 
+    def display_end_screen(self, msg):
+
+        end_screens = {
+            "die": c.END_SCREENS["YOU_DIED"],
+            "win": c.END_SCREENS["YOU_WIN"]
+        }
+
+        if msg not in end_screens:
+            return -1
+        
+        self.top_win.clear()
+
+        height, width = self.top_win.getmaxyx()
+
+        if self.lang == "en":
+            message = end_screens[msg]["en"]
+        elif self.lang == "cs":
+            message = end_screens[msg]["cs"]
+        else:
+            return -1
+
+        message_width = 0
+        for line in message:
+            if len(line) > message_width:
+                message_width = len(line)
+
+        top_offset = 10
+        left_offset = (width - message_width) // 2
+
+        self.top_win.addstr(top_offset, left_offset, message)
+
+        self.top_win_border()
+    
     class Menu:
         def __init__(self, items, bot_win, caller):
             self.menu_window = bot_win
@@ -237,7 +271,11 @@ class UI:
             if self.position == len(self.items) - 1:
                 return -1
             else:
-                return 1
+                # Return None if inventory slot is empty
+                if not self.items[self.position]:
+                    return None
+                # Return the index of the selected item
+                return self.position
 
     class AreYouSureMenu(Menu):
         def update(self):
@@ -347,7 +385,22 @@ class UI:
         self.message_win.addstr(0, 2, msg)
         self.message_win.refresh()
 
-        self.last_message = msg
+    def update_player_stats(self, player_stats):
+        """Prints the player stats specified by the player_stats dictionary"""
+
+        self.message_win.move(1, 0)
+        self.message_win.clrtoeol()
+        self.message_win.vline(0, 0, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT) # This line throws an error
+        self.message_win.vline(0, self.screen_width - 1, curses.ACS_VLINE, c.MESSAGE_WIN_HEIGHT)
+
+        power_stat = f"{self.messages['player_stats']['power']}: +{player_stats['extra_power']} | "
+        moves_stat = f"{self.messages['player_stats']['moves']}: {player_stats['base_moves']}+{player_stats['extra_moves']} | "
+        health_stat = f"{self.messages['player_stats']['health']}: {player_stats['health']}"
+
+        stats_msg = power_stat + moves_stat + health_stat
+
+        self.message_win.addstr(1, 2, stats_msg)
+        self.message_win.refresh()
 
     def top_win_border(self):
         """Displays a border for the top window, makes sure it blends in with message_win"""

@@ -9,7 +9,15 @@
 		"fight_power": "Power: ",
 		"new_item": "New item: ",
 		"success": "Success!",
-		"fail": "Failure..."
+		"fail": "Failure...",
+		"you_died": "You died",
+		"you_win": "You Win!"
+	},
+	"player_stats":
+	{
+		"power": "Power",
+		"moves": "Moves",
+		"health": "Health"
 	},
 	"input_win_messages":
 	{
@@ -32,7 +40,9 @@
 		"actions":
 		{
 			"exit": "Exit the game?",
-			"attack": "Attack this enemy?"
+			"attack": "Attack this enemy?",
+			"use": "Use this item?",
+			"remove": "Remove this item?"
 		}
 	},
 	"items":

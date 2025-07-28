@@ -44,13 +44,17 @@ def send_msg(msg, sock, length_prefix_size=c.LENGTH_PREFIX_SIZE):
         try:
             pickled_msg_size = len(pickled_msg).to_bytes(length_prefix_size, "big")
         except OverflowError:
+            print("OverflowError")
             return -1
         except Exception:
             return -1
 
         data = msg_type + pickled_msg_size + pickled_msg
-        bytes_sent = sock.send(data)
-
+        try:
+            bytes_sent = sock.send(data)
+        except Exception:
+            return -1
+        
         return bytes_sent
 
     elif type(msg) == bool:
@@ -59,8 +63,10 @@ def send_msg(msg, sock, length_prefix_size=c.LENGTH_PREFIX_SIZE):
         msg_encoded_size = len(msg_encoded).to_bytes(length_prefix_size, "big")
 
         data = msg_type + msg_encoded_size + msg_encoded
-
-        bytes_sent = sock.send(data)
+        try:
+            bytes_sent = sock.send(data)
+        except Exception:
+            return -1
 
         return bytes_sent
 
@@ -88,17 +94,20 @@ def broadcast_turn_taker(players: list, sender):
     print("Broadcasting turn_taker...")
     for player in players:
         if player != sender:
+            if player.disconnected or player.is_dead:
+                continue
             bytes_sent = send_msg(sc.PLAYERS[sender.number], player.player_sock)
-
 def broadcast_player_view(map_grid, players: list, sender):
     """Called everytime any player makes a move. Recalculates each player's player_view and sends it to them."""
     print("Broadcasting player_view...")
     for player in players:
         player_view = get_player_view(map_grid, player.player_x, player.player_y, player.number)
         if player != sender:
+            if player.disconnected or player.is_dead:
+                continue
             bytes_sent = send_msg(sc.PVUPDATE, player.player_sock)
             bytes_sent = send_msg(player_view, player.player_sock)
-            
+
 
 def get_inventory(sock, length_prefix_size=c.LENGTH_PREFIX_SIZE):
     """Called by client to request their current inventory contents"""

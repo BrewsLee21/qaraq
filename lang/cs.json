@@ -9,8 +9,15 @@
 		"fight_power": "Síla: ",
 		"new_item": "Nový předmět: ",
 		"success": "Úspěch!",
-		"fail": "Smůla..."
+		"fail": "Smůla...",
+		"you_died": "Zemřel jsi"
 	},
+	"player_stats":
+		{
+			"power": "Síla",
+			"moves": "Kroky",
+			"health": "Zdraví"
+		},
 	"input_win_messages":
 	{
 		"available_languages": "Dostupné jazyky:",
@@ -32,7 +39,9 @@
 		"actions":
 		{
 			"exit": "odejít ze hry?",
-			"attack": "zaútočit?"
+			"attack": "zaútočit?",
+			"use": "Použít tento předmět?",
+			"remove": "Odstranit tento předmět?"
 		}
 	},
 	"items":

@@ -8,6 +8,9 @@ PLAYERS = { # Send by server to all players to indicate which player is now taki
     4: "/P4"
 }
 
+DEAD = "/DEAD" # Sent by server to client when client's health goes down to 0
+WIN = "/WIN" # Sent tby server to the client that has won the game
+
 # ==== Making Moves ==== 
 NEXT = "/NEXT" # Sent by server to client when a move they made is invalid so they don't lose a move
 START = "/START" # Sent by server to client to signalize start of their turn
@@ -16,6 +19,8 @@ STOP = "/STOP" # Sent by server to client to signalize that they have no moves l
 
 # ==== Client Requests ====
 INVREQUEST = "/INVREQUEST" # Sent by client to server to request their inventory
+ITEMREQUEST = "/ITEMREQUEST" # Sent by client to server to use (or destroy) an item
+STATREQUEST = "/STATREQUEST" # Sent by client to server to request player's stats (power, moves, health, etc.)
 
 # ==== Server Requests ====
 AYSREQUEST = "/AYSREQUEST" # Are You Sure Request. Sent by server to client when asking client if they want to perform an action
