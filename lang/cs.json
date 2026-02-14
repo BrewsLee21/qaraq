@@ -10,7 +10,8 @@
 		"new_item": "Nový předmět: ",
 		"success": "Úspěch!",
 		"fail": "Smůla...",
-		"you_died": "Zemřel jsi"
+		"you_died": "Zemřel jsi",
+		"you_win": "Vyhrál jsi!"
 	},
 	"player_stats":
 		{
@@ -40,8 +41,8 @@
 		{
 			"exit": "odejít ze hry?",
 			"attack": "zaútočit?",
-			"use": "Použít tento předmět?",
-			"remove": "Odstranit tento předmět?"
+			"use": "použít tento předmět?",
+			"remove": "zahodit tento předmět?"
 		}
 	},
 	"items":

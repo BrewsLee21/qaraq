@@ -6,7 +6,8 @@
 		"turn_start": "Turn start",
 		"invalid_move": "Invalid move!",
 		"turn_end": "End of turn",
-		"fight_power": "Power: ",
+		"power": "Power: ",
+		"extra_power": "Extra power: ",
 		"new_item": "New item: ",
 		"success": "Success!",
 		"fail": "Failure...",
@@ -39,10 +40,10 @@
 		"no": "No",
 		"actions":
 		{
-			"exit": "Exit the game?",
-			"attack": "Attack this enemy?",
-			"use": "Use this item?",
-			"remove": "Remove this item?"
+			"exit": "exit the game?",
+			"attack": "attack this enemy?",
+			"use": "use this item?",
+			"remove": "remove this item?"
 		}
 	},
 	"items":

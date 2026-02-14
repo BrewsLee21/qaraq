@@ -5,7 +5,7 @@ from os.path import isfile
 
 from tile import Tile, TILE_DIRECTIONS
 import config as c
-from entities import ENTITIES, ENTITY_LIKELIHOODS, Enemy, Chest, Heal
+from entities import ENTITIES, ENTITY_LIKELIHOODS, Enemy, Dragon, Chest, Heal
 from items import generate_item
 
 # ============= Debugging and Utility =============
@@ -246,6 +246,8 @@ def generate_map_grid(size: int):
     """Returns a 2D grid of a given size"""
 
     print("Generating map...")
+
+    tier3_tiles = []
     
     if size <= 0:
         return -1
@@ -315,6 +317,8 @@ def generate_map_grid(size: int):
         
         tier = get_tier(map_grid, current_tile)
         current_tile.add_tier(tier)
+        if tier == 3 and current_tile.is_room:
+            tier3_tiles.append(current_tile)
         if current_tile.is_room:
             random_entity = generate_random_entity()
             if random_entity[0] == Heal:
@@ -328,6 +332,11 @@ def generate_map_grid(size: int):
         for j in range(len(map_grid[0])):
             if map_grid[i][j] is None:
                 map_grid[i][j] = Tile("empty", i, j)
+
+    dragon_tile = random.choice(tier3_tiles)
+    map_grid[dragon_tile.coordinate_y][dragon_tile.coordinate_x].add_entity(Dragon())
+
+    print(f"Dragon is at: {dragon_tile.coordinate_y} {dragon_tile.coordinate_x}")
 
     print("Done")
     return map_grid
@@ -380,13 +389,15 @@ def get_fight_result(player, entity):
 
     if base_power + extra_power > entity.power:
         return {
-            "power": base_power + extra_power,
+            "power": base_power,
+            "extra_power": extra_power,
             "success": True,
             "item": new_item
         }
     else:
         return {
-            "power": base_power + extra_power,
+            "power": base_power,
+            "extra_power": extra_power,
             "success": False,
             "item": None
         }

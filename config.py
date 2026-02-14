@@ -6,14 +6,15 @@ PLAYER_VIEW_X = 11 # Number of collumns
 PLAYER_VIEW_Y = 5 # Number of rows
 
 # Height ratio between the top and bottom window of the game UI
-UI_TOP_HEIGHT = 3
-UI_BOT_HEIGHT = 1
+UI_TOP_HEIGHT = 5
+UI_BOT_HEIGHT = 2
 UI_HEIGHT = UI_TOP_HEIGHT + UI_BOT_HEIGHT
 
-MESSAGE_WIN_HEIGHT = 2
+# The height of the message_win
+MESSAGE_WIN_HEIGHT = 3
 
 # Size (both height and width) of the entire map
-MAP_SIZE = 100
+MAP_SIZE = 15
 # Likelihood of a tile containing a room, the lower the number, the higher the chance of generation
 ROOM_LIKELIHOOD = 3
 

@@ -16,6 +16,13 @@ class Enemy:
         self.power = random.randrange(TIER[tier][0], TIER[tier][1])
         self.char = 'e' + str(self.power)
 
+class Dragon:
+    def __init__(self):
+        self.entity_type = "enemy"
+        self.tier = 3
+        self.power = 16
+        self.char = 'D' + str(self.power)
+        
 class Chest:
     likelihood = c.CHEST_LIKELIHOOD
     

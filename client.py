@@ -198,18 +198,6 @@ def main(stdscr):
                         if response == True:
                             fight_result = recv_msg(my_sock, length_prefix_size)
                             
-                            fight_power = fight_result["power"]
-                            fight_power_msg = messages["status_messages"]["fight_power"] + str(fight_power)
-                            
-                            fight_status = messages["status_messages"]["success"] if fight_result["success"] else messages["status_messages"]["fail"]
-                            
-                            new_item = fight_result["item"]
-                            if new_item:
-                                new_item_name = messages["items"][new_item.category][new_item.name]
-                                new_item_msg = messages["status_messages"]["new_item"] + new_item_name
-                                fight_msg = f"{fight_power_msg} | {fight_status} | {new_item_msg}"
-                            else:
-                                fight_msg = f"{fight_power_msg} | {fight_status}"
                             new_player_view = recv_msg(my_sock, length_prefix_size);
 
                             # If I died in battle
@@ -218,10 +206,10 @@ def main(stdscr):
                                 ui.display_info_menu(messages["status_messages"]["you_died"])
                                 i_am_dead = True
                                 break
-                                
+
+                            ui.display_fight_result_info_menu(fight_result) 
                             
                             ui.update_player_view(new_player_view)
-                            ui.display_info_menu(fight_msg)
 
                             new_stats = recv_msg(my_sock, length_prefix_size)
                             ui.update_player_stats(new_stats)

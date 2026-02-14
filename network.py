@@ -97,6 +97,7 @@ def broadcast_turn_taker(players: list, sender):
             if player.disconnected or player.is_dead:
                 continue
             bytes_sent = send_msg(sc.PLAYERS[sender.number], player.player_sock)
+        
 def broadcast_player_view(map_grid, players: list, sender):
     """Called everytime any player makes a move. Recalculates each player's player_view and sends it to them."""
     print("Broadcasting player_view...")

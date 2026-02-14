@@ -110,7 +110,7 @@ class Player:
         for weapon in self.inventory["weapons"]:
             if weapon:
                 extra_power += weapon.power
-        return extra_power
+        return extra_power + self.extra_power
 
     def get_extra_moves(self):
         extra_moves = self.extra_moves

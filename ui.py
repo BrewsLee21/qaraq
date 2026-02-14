@@ -56,7 +56,7 @@ class UI:
         self.screen_width = width
 
         # Create the top window
-        top_height = ((height * c.UI_TOP_HEIGHT) // c.UI_HEIGHT) - c.MESSAGE_WIN_HEIGHT
+        top_height = ((height * c.UI_TOP_HEIGHT) // c.UI_HEIGHT)
         self.top_win = curses.newwin(top_height, width, 0, 0)
 
         # Add borders
@@ -326,12 +326,40 @@ class UI:
 
         def run(self):
             return True
-            
+
+    class FightResultInfoMenu(InfoMenu):
+        def update(self, fight_result):
+            self.menu.top()
+            self.menu.show()
+            self.menu_window.clear()
+
+            top_offset = 1
+            left_offset = 1
+
+            self.menu_window.addstr(top_offset, left_offset, self.caller_UI.messages["status_messages"]["power"] + str(fight_result["power"]))
+            top_offset += 1
+            self.menu_window.addstr(top_offset, left_offset, self.caller_UI.messages["status_messages"]["extra_power"] + str(fight_result["extra_power"]))
+            if fight_result["success"] == True:
+                top_offset += 1
+                self.menu_window.addstr(top_offset, left_offset, self.caller_UI.messages["status_messages"]["new_item"] + self.caller_UI.messages["items"][fight_result["item"].category][fight_result["item"].name])
+                top_offset += 2
+            else:
+                top_offset += 3
+
+            left_offset = 3
+            self.menu_window.addstr(top_offset, left_offset, "OK", curses.A_REVERSE)
+
+            panel.update_panels()
+            curses.doupdate()
+
+            UI.bot_win_border(self.caller_UI)
+                
     def initialize_panel_menu(self):
         """Initializes the Menu class to create some menus"""
         self.inventory_menu = self.InventoryMenu([], self.bot_win, self)
         self.ays_menu = self.AreYouSureMenu([], self.bot_win, self)
         self.info_menu = self.InfoMenu([], self.bot_win, self)
+        self.fight_result_info_menu = self.FightResultInfoMenu([], self.bot_win, self)
         
         main_menu_items = [
             (self.messages["menu_options"]["items"], self.inventory_menu),
@@ -366,6 +394,17 @@ class UI:
             my_move = self.stdscr.getkey()
             if my_move == '\n':
                 return self.info_menu.run()
+                
+    def display_fight_result_info_menu(self, fight_result):
+        """Displays the result of the fight in the bot_win, not in the msg_win"""
+        fight_status = self.messages["status_messages"]["success"] if fight_result["success"] == True else self.messages["status_messages"]["fail"]
+        self.print_msg(fight_status)
+        self.fight_result_info_menu.position = 0
+        self.fight_result_info_menu.update(fight_result)
+        while True:
+            my_move = self.stdscr.getkey()
+            if my_move == '\n':
+                return self.fight_result_info_menu.run()
         
     def flush_window_input(self, win):
         """Used to flush all the input that the user may have buffered by pressing keys when not playing their turn"""
@@ -399,7 +438,7 @@ class UI:
 
         stats_msg = power_stat + moves_stat + health_stat
 
-        self.message_win.addstr(1, 2, stats_msg)
+        self.message_win.addstr(c.MESSAGE_WIN_HEIGHT - 1, 2, stats_msg)
         self.message_win.refresh()
 
     def top_win_border(self):
